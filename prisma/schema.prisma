@@ -1,20 +1,100 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-model users {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  image     String
-  createdAt DateTime @default(now())
+
+model Admin {
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
+}
+
+
+model Unit {
+  id      Int    @id @default(autoincrement())
+  name    String
+  email   String @unique
+}
+
+model Faculty {
+  id      Int    @id @default(autoincrement())
+  name    String
+  email   String @unique
+  Departments Department[]
+}
+
+model Advisor {
+  id           Int        @id @default(autoincrement())
+  name         String
+  email        String     @unique
+  departmentId Int
+  Department   Department @relation(fields: [departmentId], references: [id])
+  Student      Student[]
+
+  @@index([departmentId])
+}
+
+model Certificate {
+  id           String     @id
+  type         String
+  issueDate    DateTime
+  studentId    Int
+  departmentId Int
+  diplomaId    Int?
+  Department   Department @relation(fields: [departmentId], references: [id])
+  Diploma      Diploma?   @relation(fields: [diplomaId], references: [id])
+  Student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([departmentId])
+  @@index([diplomaId])
+  @@index([studentId])
+}
+
+model Department {
+  id             Int              @id @default(autoincrement())
+  name           String
+  email          String           @unique
+  Advisor        Advisor[]
+  Certificate    Certificate[]
+  Diploma        Diploma[]
+  Student        Student[]
+  facultyId     Int
+  Faculty       Faculty @relation(fields: [facultyId], references: [id])
+}
+
+model Diploma {
+  id           Int           @id @default(autoincrement())
+  issueDate    DateTime
+  studentId    Int
+  departmentId Int
+  Certificate  Certificate[]
+  Department   Department    @relation(fields: [departmentId], references: [id])
+  Student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([departmentId])
+  @@index([studentId])
+}
+
+
+
+model Student {
+  id                      Int                       @id @default(autoincrement())
+  studentId               Int                       @unique
+  name                    String
+  email                   String                    @unique
+  departmentId            Int
+  advisorId               Int
+  Certificate             Certificate[]
+  Diploma                 Diploma[]
+  Advisor                 Advisor                   @relation(fields: [advisorId], references: [id])
+  Department              Department                @relation(fields: [departmentId], references: [id])
+
+  @@index([advisorId])
+  @@index([departmentId])
 }

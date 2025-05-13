@@ -1,57 +1,152 @@
----
-name: Vercel Postgres + Prisma Next.js Starter
-slug: postgres-prisma
-description: Simple Next.js template that uses Vercel Postgres as the database and Prisma as the ORM.
-framework: Next.js
-useCase: Starter
-css: Tailwind
-database: Vercel Postgres
-deployUrl: https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fstorage%2Fpostgres-prisma&project-name=postgres-prisma&repository-name=postgres-prisma&demo-title=Vercel%20Postgres%20%2B%20Prisma%20Next.js%20Starter&demo-description=Simple%20Next.js%20template%20that%20uses%20Vercel%20Postgres%20as%20the%20database%20and%20Prisma%20as%20the%20ORM.&demo-url=https%3A%2F%2Fpostgres-prisma.vercel.app%2F&demo-image=https%3A%2F%2Fpostgres-prisma.vercel.app%2Fopengraph-image.png&stores=%5B%7B"type"%3A"postgres"%7D%5D
-demoUrl: https://postgres-prisma.vercel.app/
-relatedTemplates:
-  - postgres-starter
-  - postgres-kysely
-  - postgres-sveltekit
----
+# CENG316 - Graduation Management System
 
-# Vercel Postgres + Prisma Next.js Starter
+A modern web application built with Next.js, utilizing [Neon PostgreSQL](https://neon.tech) as the database and [Prisma](https://prisma.io/) as the ORM. This system is designed to manage graduation processes efficiently.
 
-Simple Next.js template that uses [Vercel Postgres](https://vercel.com/postgres) as the database and [Prisma](https://prisma.io/) as the ORM.
+## 🚀 Features
 
-## Demo
+- Modern Next.js framework
+- Vercel Postgres database integration
+- Prisma ORM for database management
+- Tailwind CSS for styling
+- RESTful API endpoints for UBYS integration
 
-https://postgres-prisma.vercel.app/
+## 🛠️ Tech Stack
 
-## How to Use
+- **Frontend**: Next.js
+- **Database**: Neon PostgreSQL
+- **ORM**: Prisma
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel
 
-You can choose from one of the following two methods to use this repository:
+## 📋 Prerequisites
 
-### One-Click Deploy
+- Node.js (Latest LTS version recommended)
+- pnpm package manager
+- Git
+- A Neon PostgreSQL database account
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
+## 🚀 Getting Started
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fstorage%2Fpostgres-prisma&project-name=postgres-prisma&repository-name=postgres-prisma&demo-title=Vercel%20Postgres%20%2B%20Prisma%20Next.js%20Starter&demo-description=Simple%20Next.js%20template%20that%20uses%20Vercel%20Postgres%20as%20the%20database%20and%20Prisma%20as%20the%20ORM.&demo-url=https%3A%2F%2Fpostgres-prisma.vercel.app%2F&demo-image=https%3A%2F%2Fpostgres-prisma.vercel.app%2Fopengraph-image.png&stores=%5B%7B"type"%3A"postgres"%7D%5D)
-
-### Clone and Deploy
-
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [pnpm](https://pnpm.io/installation) to bootstrap the example:
+### 1. Clone the Repository
 
 ```bash
-pnpm create next-app --example https://github.com/vercel/examples/tree/main/storage/postgres-prisma
+git clone https://github.com/DogukanTopcu/iyte-gms.git
+cd iyte-gms
 ```
 
-Once that's done, copy the .env.example file in this directory to .env.local (which will be ignored by Git):
+### 2. Environment Setup
+
+Copy the example environment file and configure your variables:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Then open `.env.local` and set the environment variables to match the ones in your Vercel Storage Dashboard.
+Update the `.env` file with your Vercel Storage Dashboard credentials.
 
-Next, run Next.js in development mode:
+### 3. Install Dependencies
 
 ```bash
-pnpm dev
+pnpm install
 ```
 
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples) ([Documentation](https://nextjs.org/docs/deployment)).
+### 4. Run Development Server
+
+```bash
+pnpm run dev
+```
+
+The application will be available at `http://localhost:3000`
+
+## 🚀 Deployment
+
+Deploy your application to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples).
+
+## 📚 API Documentation
+
+### UBYS API Endpoints
+
+#### 1. Admins API
+```bash
+/ubys/admins
+```
+
+**GET Requests:**
+- Get all admins: `/ubys/admins`
+- Get admin by ID: `/ubys/admins?id={user_id}`
+- Get admin by unit: `/ubys/admins?unitName={unit_name}`
+
+**POST Request:**
+```json
+POST /ubys/admins
+{
+  "email": "",
+  "password": ""
+}
+```
+
+#### 2. Advisors API
+```bash
+/ubys/advisors
+```
+
+**GET Requests:**
+- Get all advisors: `/ubys/advisors`
+- Get advisor by ID: `/ubys/advisors?id={user_id}`
+- Get advisor by department: `/ubys/advisors?departmentName={department_name}`
+
+**POST Request:**
+```json
+POST /ubys/advisors
+{
+  "email": "",
+  "password": ""
+}
+```
+
+#### 3. Initialization API
+```bash
+/ubys/init
+```
+
+**Endpoints:**
+- Fetch all admins: `/ubys/init/fetchAdmins`
+- Fetch institutions data: `/ubys/init/fetchInstitutions`
+  ```json
+  {
+    "units": [],
+    "departments": [],
+    "faculties": []
+  }
+  ```
+
+#### 4. Students API
+```bash
+/ubys/students
+```
+
+**GET Requests:**
+- Get all students: `/ubys/students`
+- Get students by grade: `/ubys/students?grade={grade}`
+- Get student by ID: `/ubys/students?id={student_id}`
+- Get student by student ID: `/ubys/students?studentId={student_id}`
+- Get students by department: `/ubys/students?departmentId={department_id}`
+- Get students by advisor: `/ubys/students?advisorId={advisor_id}`
+- Get specific student by advisor: `/ubys/students?advisorId={advisor_id}&studentId={student_id}`
+
+**POST Request:**
+```json
+POST /ubys/students
+{
+  "email": "",
+  "password": ""
+}
+```
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 👥 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
