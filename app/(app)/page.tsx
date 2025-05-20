@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
-import { UserCard } from './student/_components/UserCard';
+import { UserCard } from './student/_components/StudentInfoCard';
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
