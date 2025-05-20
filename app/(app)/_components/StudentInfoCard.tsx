@@ -53,7 +53,7 @@ export const UserCard = ({ user, isLoading, error }: UserCardProps) => {
         
         <div className="flex">
           <span className="font-medium text-gray-500 w-32">Student ID:</span>
-          <span className="text-gray-800">{user.id}</span>
+          <span className="text-gray-800">{user.studentId}</span>
         </div>
         
         <div className="flex">

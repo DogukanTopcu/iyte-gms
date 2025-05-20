@@ -23,6 +23,7 @@ interface Advisor {
 
 export interface User {
   id: number;
+  studentId: number;
   name: string;
   email: string;
   departmentId: number;
