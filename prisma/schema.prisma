@@ -122,6 +122,14 @@ model GraduationStatus {
   @@index([processedByFacSecretariatId])
 }
 
+model RevokedToken {
+  jti       String   @id // The 'jti' (JWT ID) claim of the revoked token
+  expiresAt DateTime // Original expiry time of the token (useful for cleanup)
+  revokedAt DateTime @default(now()) // Timestamp of when the token was revoked
+
+  @@index([expiresAt]) // To efficiently query for expired tokens for cleanup
+}
+
 enum GraduationStatusEnum {
   SYSTEM_APPROVAL
   ADVISOR_APPROVAL
