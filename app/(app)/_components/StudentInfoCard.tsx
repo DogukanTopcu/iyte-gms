@@ -1,4 +1,4 @@
-import { User } from "../../../context/AuthContext";
+import { User } from "../../context/AuthContext";
 
 interface UserCardProps {
   user: User | null;
@@ -35,7 +35,7 @@ export const UserCard = ({ user, isLoading, error }: UserCardProps) => {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200">
+    <div className="bg-white mb-5 p-6 rounded-lg shadow-md border border-gray-200">
       <h2 className="text-xl font-semibold mb-4 text-gray-800 pb-2 border-b border-gray-200">
         Student Information
       </h2>

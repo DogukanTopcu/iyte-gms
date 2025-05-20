@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { TranscriptCard } from '../_components/TranscriptCard';
+import { TranscriptCard } from '../../_components/TranscriptCard';
 import { useAuth } from '../../../context/AuthContext';
 
 interface Course {

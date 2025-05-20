@@ -7,7 +7,7 @@ import AdvisorInfoCard from './_components/AdvisorInfoCard';
 import { Department } from '../types/Department';
 import { departments } from '../api/ubys/_shared/unit-and-department-data';
 
-import { UserCard } from './student/_components/StudentInfoCard';
+import { UserCard } from './_components/StudentInfoCard';
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -31,6 +31,10 @@ export default function Dashboard() {
             <>
               {isLoading && <p>Loading advisor data...</p>}
               {error && <p className="text-red-600">Error: {error}</p>}
+              <AdvisorInfoCard
+                name={user?.name || 'N/A'}
+                email={user?.email || 'N/A'}
+                department={departments.find((dep: Department) => dep.id === user?.departmentId) || { id: 0, name: 'N/A' }} />
             </>
           )
           : userRole === 'student' ? (
