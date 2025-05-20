@@ -35,12 +35,12 @@ export default function Dashboard() {
           )
           : userRole === 'student' ? (
             <>
-              <UserCard user={user} isLoading={isLoading} error={error} /></UserCard>
+              <UserCard user={user} isLoading={isLoading} error={error} />
 
               <AdvisorInfoCard
                 name={user?.advisor?.name || 'N/A'}
                 email={user?.advisor?.email || 'N/A'}
-                department={departments.find((dep: Department) => dep.id === user?.advisor?.departmentId) || { id: 0, name: 'N/A' }}></AdvisorInfoCard>
+                department={departments.find((dep: Department) => dep.id === user?.advisor?.departmentId) || { id: 0, name: 'N/A' }} />
 
             </>
           )
