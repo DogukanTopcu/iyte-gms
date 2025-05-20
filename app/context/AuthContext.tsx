@@ -21,7 +21,7 @@ interface Advisor {
   password: string;
 }
 
-interface User {
+export interface User {
   id: number;
   name: string;
   email: string;
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Check for existing session on mount
   useEffect(() => {
@@ -74,7 +74,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsAuthenticated(storedIsAuth);
         setUserRole(storedRole);
         setUser(storedUser);
-        setAuthCookie(storedIsAuth, storedRole);
+        // Ensure the cookie is also set if localStorage has auth, for middleware consistency
+        if (storedIsAuth) {
+          setAuthCookie(storedIsAuth, storedRole);
+        }
       } catch (error) {
         console.error('Error parsing stored auth:', error);
         localStorage.removeItem('auth');
@@ -84,18 +87,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserRole(null);
       }
     }
+    setIsLoading(false); // Set isLoading to false after checking localStorage
   }, []);
 
   // Handle route protection
   useEffect(() => {
+    // Only run route protection logic after initial loading is done
+    if (isLoading) {
+      return;
+    }
+
     const isLoginPage = pathname === '/login';
-    
+
+    // If not authenticated and not on the login page, redirect to login
     if (!isAuthenticated && !isLoginPage) {
       router.push('/login');
     } else if (isAuthenticated && isLoginPage) {
+      // If authenticated and on the login page, redirect to the main page
       router.push('/');
     }
-  }, [isAuthenticated, pathname, router]);
+  }, [isAuthenticated, pathname, router, isLoading]); // Add isLoading to dependency array
 
   const updateUser = (updates: Partial<User>) => {
     setUser(prevUser => {
@@ -120,47 +131,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       body: JSON.stringify({ email, password }),
     })
-    .then(response => {
-      if (!response.ok) {
-        toast.error('Invalid email or password');
-      }
-      return response.json();
-    })
-    .then(async (data) => {
-      await validateUser(data.user.email, data.role).then(res => {
-        if (!res.user) {
-          if (data.role === 'student') {
-            toast.error('Please consult your advisor for access to this system');
-          } 
-          toast.error('User have not permission to access this system');
-          
-          return;
+      .then(response => {
+        if (!response.ok) {
+          toast.error('Invalid email or password');
         }
-        setIsAuthenticated(true);
-        setUserRole(data.role);
-        setUser(data.user);
-        localStorage.setItem('auth', JSON.stringify({
-          isAuthenticated: true,
-          userRole: data.role,
-          user: data.user
-        }));
-        setAuthCookie(true, data.role);
-      }).catch(error => {
-        toast.error('User have not permission to access this system');
-        return;
+        return response.json();
+      })
+      .then(async (data) => {
+        await validateUser(data.user.email, data.role).then(res => {
+          if (!res.user) {
+            if (data.role === 'student') {
+              toast.error('Please consult your advisor for access to this system');
+            }
+            toast.error('User have not permission to access this system');
+
+            return;
+          }
+          setIsAuthenticated(true);
+          setUserRole(data.role);
+          setUser(data.user);
+          localStorage.setItem('auth', JSON.stringify({
+            isAuthenticated: true,
+            userRole: data.role,
+            user: data.user
+          }));
+          setAuthCookie(true, data.role);
+        }).catch(error => {
+          toast.error('User have not permission to access this system');
+          return;
+        });
+      })
+      .catch(error => {
+        console.error('Login failed:', error);
+        setIsAuthenticated(false);
+        setUser(null);
+        setUserRole(null);
+        localStorage.removeItem('auth');
+        removeAuthCookie();
+        toast.error('Invalid email or password');
+      }).finally(() => {
+        setIsLoading(false);
       });
-    })
-    .catch(error => {
-      console.error('Login failed:', error);
-      setIsAuthenticated(false);
-      setUser(null);
-      setUserRole(null);
-      localStorage.removeItem('auth');
-      removeAuthCookie();
-      toast.error('Invalid email or password');
-    }).finally(() => {
-      setIsLoading(false);
-    });
   };
 
   const validateUser = async (email: string, role: UserRole) => {
@@ -201,4 +212,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}
