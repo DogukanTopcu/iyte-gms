@@ -1,15 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
-
+import { UserCard } from './student/_components/UserCard';
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { user, userRole } = useAuth();
+  
+  useEffect(() => {
+    // Once user data is available or confirmed null, set loading to false
+    if (user !== undefined) {
+      setIsLoading(false);
+    }
+  }, [user]);
 
   return (
     <main className="flex-1 p-8">
@@ -23,16 +30,7 @@ export default function Dashboard() {
             </>
           )
           : userRole === 'student' ? (
-            <>
-              {isLoading && <p>Loading student data...</p>}
-              {error && <p className="text-red-600">Error: {error}</p>}
-
-              <p>Student data:</p>
-              <p>{user?.name}</p>
-              <p>{user?.email}</p>
-              <p>{user?.id}</p>
-              <p>{user?.department?.name}</p>
-            </>
+            <UserCard user={user} isLoading={isLoading} error={error} />
           )
           : userRole === 'secretariat' ? (
             <>
@@ -42,8 +40,6 @@ export default function Dashboard() {
           ) : null
         }
 
-      
-        <p>Role: {userRole}</p>
-      </main>
+        </main>
   );
 } 

@@ -21,7 +21,7 @@ interface Advisor {
   password: string;
 }
 
-interface User {
+export interface User {
   id: number;
   name: string;
   email: string;
