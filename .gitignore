@@ -38,6 +38,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-#.vscode
+.vscode
 pnpm-workspace.yaml
-#.env.example
+.env.example
