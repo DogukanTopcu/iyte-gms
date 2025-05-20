@@ -3,60 +3,71 @@ import { advisors } from '../_shared/advisors-data';
 import { departments } from '../_shared/unit-and-department-data';
 
 // Handler function to process requests
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+export async function GET(request: NextRequest) {
+  // Get advisor ID from query params if provided
+  const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get('id');
-  const departmentName = searchParams.get('departmentName');
-
-  // 1. Get all advisor data
-  if (!id && !departmentName) {
-    return NextResponse.json(advisors, { status: 200 });
-  }
-
-  // 2. Get specific advisor by id
+  const departmentId = searchParams.get('departmentId');
+  const email = searchParams.get('email');
+  
   if (id) {
-    const advisorId = parseInt(id, 10);
-    const advisor = advisors.find((advisor) => advisor.id === advisorId);
-    if (advisor) {
-      return NextResponse.json(advisor, { status: 200 });
-    } else {
-      return NextResponse.json({ message: 'Advisor not found' }, { status: 404 });
+    const numId = parseInt(id);
+    const advisor = advisors.find(a => a.id === numId);
+    
+    if (!advisor) {
+      return NextResponse.json({ error: 'Advisor not found' }, { status: 404 });
     }
+    
+    return NextResponse.json(advisor);
   }
 
-  // 3. Get specific advisors by department name
-  if (departmentName) {
-    const department = departments.find((dept) => dept.name.toLowerCase() === departmentName.toLowerCase());
-    if (department) {
-      const advisorsByDepartment = advisors.filter((advisor) => advisor.departmentId === department.id);
-      return NextResponse.json(advisorsByDepartment, { status: 200 });
-    } else {
-      return NextResponse.json({ message: 'Department not found' }, { status: 404 });
+  if (departmentId) {
+    const numDeptId = parseInt(departmentId);
+    const departmentAdvisors = advisors.filter(a => a.departmentId === numDeptId);
+    
+    if (departmentAdvisors.length === 0) {
+      return NextResponse.json({ error: 'No advisors found for this department' }, { status: 404 });
     }
+    
+    return NextResponse.json(departmentAdvisors);
   }
 
-  return NextResponse.json({ message: 'Invalid request' }, { status: 400 });
+  if (email) {
+    const advisor = advisors.find(a => a.email === email);
+    
+    if (!advisor) {
+      return NextResponse.json({ error: 'Advisor not found' }, { status: 404 });
+    }
+    
+    return NextResponse.json(advisor);
+  }
+  
+  // Return all advisors if no id provided
+  return NextResponse.json(advisors);
 }
 
-
 // Handler function to process POST requests
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await req.json();
-
-    // Find the admin with the matching email and password
-    const advisor = advisors.find((advisor) => advisor.email === email && advisor.password === password);
-
-    if (advisor) {
-      const dept = departments.find((dept) => dept.id === advisor.departmentId);
-      // Return the advisor data without the password
-      const { password, ...advisorWithoutPassword } = advisor;
-      return NextResponse.json({ ...advisorWithoutPassword, department: dept }, { status: 200 });
-    } else {
-      return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
+    const body = await request.json();
+    const { email, password } = body;
+    
+    // Login validation
+    const advisor = advisors.find(a => a.email === email && a.password === password);
+    
+    if (!advisor) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
+    
+    // Return advisor without password for security
+    const { password: _, ...safeAdvisor } = advisor;
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Login successful', 
+      user: safeAdvisor 
+    });
+    
   } catch (error) {
-    console.error('Error processing request:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Bad request' }, { status: 400 });
   }
 }

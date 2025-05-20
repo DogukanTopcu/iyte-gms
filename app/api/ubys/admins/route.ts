@@ -1,63 +1,61 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { admins } from '../_shared/admin-data';
-import { units } from '../_shared/unit-and-department-data';
 
 // Handler function to process requests
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+export async function GET(request: NextRequest) {
+  // Get admin ID from query params if provided
+  const searchParams = request.nextUrl.searchParams;
   const id = searchParams.get('id');
-  const unitName = searchParams.get('unitName');
-
-  // 1. Get all admin data
-  if (!id && !unitName) {
-    return NextResponse.json(admins, { status: 200 });
-  }
-
-  // 2. Get specific admin by id
+  const email = searchParams.get('email');
+  
   if (id) {
-    const adminId = parseInt(id, 10);
-    const admin = admins.find((admin) => admin.id === adminId);
-    if (admin) {
-      return NextResponse.json(admin, { status: 200 });
-    } else {
-      return NextResponse.json({ message: 'Admin not found' }, { status: 404 });
+    const numId = parseInt(id);
+    const admin = admins.find(a => a.id === numId);
+    
+    if (!admin) {
+      return NextResponse.json({ error: 'Admin not found' }, { status: 404 });
     }
+    
+    return NextResponse.json(admin);
   }
 
-  // 3. Get specific admins by unit name
-  if (unitName) {
-    const unit = units.find((unit) => unit.name.toLowerCase() === unitName.toLowerCase());
-    if (unit) {
-      const adminsByUnit = admins.filter((admin) => admin.unitId === unit.id);
-      return NextResponse.json(adminsByUnit, { status: 200 });
-    } else {
-      return NextResponse.json({ message: 'Unit not found' }, { status: 404 });
+  if (email) {
+    const admin = admins.find(a => a.email === email);
+    
+    if (!admin) {
+      return NextResponse.json({ error: 'Admin not found' }, { status: 404 });
     }
+    
+    return NextResponse.json(admin);
   }
-
-  return NextResponse.json({ message: 'Invalid request' }, { status: 400 });
+  
+  // Return all admins if no id provided
+  return NextResponse.json(admins);
 }
 
 // Handler function to process POST requests
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await req.json();
-
-    // Find the admin with the matching email and password
-    const admin = admins.find((admin) => admin.email === email && admin.password === password);
-    if (admin) {
-      // Find the unit associated with the admin's unitId
-      const unit = units.find((unit) => unit.id === admin.unitId);
-      
-      // Return the admin data without the password and include the unit data
-      const { password, ...adminWithoutPassword } = admin;
-      return NextResponse.json({ ...adminWithoutPassword, unit }, { status: 200 });
+    const body = await request.json();
+    const { email, password } = body;
+    
+    // Login validation
+    const admin = admins.find(a => a.email === email && a.password === password);
+    
+    if (!admin) {
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
-
+    
+    // Return admin without password for security
+    const { password: _, ...safeAdmin } = admin;
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Login successful', 
+      user: safeAdmin 
+    });
+    
   } catch (error) {
-    console.error('Error processing request:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Bad request' }, { status: 400 });
   }
 }
 
