@@ -36,12 +36,7 @@ cd iyte-gms
 
 ### 2. Environment Setup
 
-Copy the example environment file and configure your variables:
-
-```bash
-cp .env.example .env
-```
-
+Copy the example environment file and configure your variables.
 Update the `.env` file with your Vercel Storage Dashboard credentials.
 
 ### 3. Install Dependencies
@@ -60,7 +55,7 @@ The application will be available at `http://localhost:3000`
 
 ## 🚀 Deployment
 
-Deploy your application to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples).
+The application is deployed to the cloud with [Vercel](https://vercel.com/).
 
 ## 📚 API Documentation
 
