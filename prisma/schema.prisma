@@ -8,89 +8,124 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+model Faculty {
+  id              Int              @id @default(autoincrement())
+  name            String
+  email           String           @unique
+  Departments     Department[]
+  FacSecretariats FacSecretariat[]
+}
+
+model Department {
+  id               Int               @id @default(autoincrement())
+  name             String
+  email            String            @unique
+  facultyId        Int
+  Advisor          Advisor[]
+  Faculty          Faculty           @relation(fields: [facultyId], references: [id])
+  DeptSecretariats DeptSecretariat[]
+  Student          Student[]
+
+  @@index([facultyId])
+}
+
+model Certificate {
+  type      String
+  issueDate DateTime
+  studentId Int
+  id        Int      @id @default(autoincrement())
+  Student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
+}
+
+model Diploma {
+  issueDate DateTime
+  studentId Int      @id
+  Student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
 model Admin {
   id    Int    @id @default(autoincrement())
   name  String
   email String @unique
 }
 
-model Unit {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
-}
-
-model Faculty {
-  id          Int          @id @default(autoincrement())
-  name        String
-  email       String       @unique
-  Departments Department[]
-}
-
 model Advisor {
-  id           Int        @id @default(autoincrement())
-  name         String
-  email        String     @unique
-  departmentId Int
-  Department   Department @relation(fields: [departmentId], references: [id])
-  Student      Student[]
+  id                          Int                @id @default(autoincrement())
+  name                        String
+  email                       String             @unique
+  departmentId                Int
+  Department                  Department         @relation(fields: [departmentId], references: [id])
+  ProcessedGraduationStatuses GraduationStatus[] @relation("GraduationStatusProcessedByAdvisor")
+  Student                     Student[]
 
   @@index([departmentId])
 }
 
-model Certificate {
-  id           String     @id
-  type         String
-  issueDate    DateTime
-  studentId    Int
-  departmentId Int
-  diplomaId    Int?
-  Department   Department @relation(fields: [departmentId], references: [id])
-  Diploma      Diploma?   @relation(fields: [diplomaId], references: [id])
-  Student      Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+model DeptSecretariat {
+  id                          Int                @id @default(autoincrement())
+  name                        String
+  email                       String             @unique
+  departmentId                Int
+  Department                  Department         @relation(fields: [departmentId], references: [id])
+  ProcessedGraduationStatuses GraduationStatus[] @relation("GraduationStatusProcessedByDeptSecretariat")
 
   @@index([departmentId])
-  @@index([diplomaId])
-  @@index([studentId])
 }
 
-model Department {
-  id          Int           @id @default(autoincrement())
-  name        String
-  email       String        @unique
-  facultyId   Int
-  Advisor     Advisor[]
-  Certificate Certificate[]
-  Faculty     Faculty       @relation(fields: [facultyId], references: [id])
-  Diploma     Diploma[]
-  Student     Student[]
-}
+model FacSecretariat {
+  id                          Int                @id @default(autoincrement())
+  name                        String
+  email                       String             @unique
+  facultyId                   Int
+  Faculty                     Faculty            @relation(fields: [facultyId], references: [id])
+  ProcessedGraduationStatuses GraduationStatus[] @relation("GraduationStatusProcessedByFacSecretariat")
 
-model Diploma {
-  id           Int           @id @default(autoincrement())
-  issueDate    DateTime
-  studentId    Int
-  departmentId Int
-  Certificate  Certificate[]
-  Department   Department    @relation(fields: [departmentId], references: [id])
-  Student      Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@index([departmentId])
-  @@index([studentId])
+  @@index([facultyId])
 }
 
 model Student {
-  id           Int           @id @default(autoincrement())
-  name         String
-  email        String        @unique
-  departmentId Int
-  advisorId    Int
-  studentId    Int           @unique
-  Certificate  Certificate[]
-  Diploma      Diploma[]
-  Advisor      Advisor       @relation(fields: [advisorId], references: [id])
-  Department   Department    @relation(fields: [departmentId], references: [id])
+  id               Int               @id @default(autoincrement())
+  name             String
+  email            String            @unique
+  departmentId     Int
+  advisorId        Int
+  studentId        Int               @unique
+  Certificate      Certificate[]
+  Diploma          Diploma?
+  GraduationStatus GraduationStatus?
+  Advisor          Advisor           @relation(fields: [advisorId], references: [id])
+  Department       Department        @relation(fields: [departmentId], references: [id])
 
   @@index([advisorId])
   @@index([departmentId])
+}
+
+model GraduationStatus {
+  studentId                    Int                  @id
+  status                       GraduationStatusEnum
+  processedByAdvisorId         Int?
+  processedByDeptSecretariatId Int?
+  processedByFacSecretariatId  Int?
+  createdAt                    DateTime             @default(now())
+  updatedAt                    DateTime             @updatedAt
+  ProcessedByAdvisor           Advisor?             @relation("GraduationStatusProcessedByAdvisor", fields: [processedByAdvisorId], references: [id])
+  ProcessedByDeptSecretariat   DeptSecretariat?     @relation("GraduationStatusProcessedByDeptSecretariat", fields: [processedByDeptSecretariatId], references: [id])
+  ProcessedByFacSecretariat    FacSecretariat?      @relation("GraduationStatusProcessedByFacSecretariat", fields: [processedByFacSecretariatId], references: [id])
+  Student                      Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, status])
+  @@index([studentId])
+  @@index([processedByAdvisorId])
+  @@index([processedByDeptSecretariatId])
+  @@index([processedByFacSecretariatId])
+}
+
+enum GraduationStatusEnum {
+  SYSTEM_APPROVAL
+  ADVISOR_APPROVAL
+  DEPARTMENT_SECRETARIAT_APPROVAL
+  FACULTY_SECRETARIAT_APPROVAL
+  COMPLETED
 }
