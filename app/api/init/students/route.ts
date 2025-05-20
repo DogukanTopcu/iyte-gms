@@ -3,11 +3,24 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function POST(req: Request) {
-    const data = await req.json();
-    const students = data.filter((student: any) => student.grade === 4);
+export async function POST() {
     try {
-        students.forEach(async (student: any) => {
+        // Fetch data from UBYS API - this endpoint already filters students with grade 4
+        const studentsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ubys/init/fetchstudents`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!studentsResponse.ok) {
+            throw new Error('Failed to fetch students data');
+        }
+
+        const students = await studentsResponse.json();
+
+        // Upsert students
+        for (const student of students) {
             await prisma.student.upsert({
                 where: { id: student.id },
                 update: {
@@ -26,9 +39,11 @@ export async function POST(req: Request) {
                     advisorId: student.advisorId,
                 }
             });
-        });
+        }
+        
         return NextResponse.json({ message: 'Students created successfully' }, { status: 200 });
     } catch (error) {
+        console.error('Error creating students:', error);
         return NextResponse.json({ error: 'Failed to create students' }, { status: 500 });
     } finally {
         await prisma.$disconnect();
@@ -40,6 +55,7 @@ export async function GET() {
         const students = await prisma.student.findMany();
         return NextResponse.json(students, { status: 200 });
     } catch (error) {
+        console.error('Error fetching students:', error);
         return NextResponse.json({ error: 'Failed to fetch students' }, { status: 500 });
     } finally {
         await prisma.$disconnect();

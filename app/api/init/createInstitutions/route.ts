@@ -3,11 +3,24 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function POST(req: Request) {
-  const data = await req.json();
+export async function POST() {
   try {
+    // Fetch data from UBYS API
+    const unitsAndDepartmentsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ubys/init/fetchunitanddepartments`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!unitsAndDepartmentsResponse.ok) {
+      throw new Error('Failed to fetch units and departments data');
+    }
+
+    const { faculties, departments } = await unitsAndDepartmentsResponse.json();
+
     // Upsert faculties
-    for (const faculty of data.faculties) {
+    for (const faculty of faculties) {
       await prisma.faculty.upsert({
         where: { id: faculty.id },
         update: { name: faculty.name, email: faculty.email },
@@ -16,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     // Upsert departments
-    for (const department of data.departments) {
+    for (const department of departments) {
       await prisma.department.upsert({
         where: { id: department.id },
         update: { name: department.name, email: department.email, facultyId: department.facultyId },
@@ -24,19 +37,10 @@ export async function POST(req: Request) {
       });
     }
 
-    // Upsert units
-    for (const unit of data.units) {
-      await prisma.unit.upsert({
-        where: { id: unit.id },
-        update: { name: unit.name, email: unit.email },
-        create: { id: unit.id, name: unit.name, email: unit.email }
-      });
-    }
-
-    return NextResponse.json({ message: 'Data upserted successfully' }, { status: 200 });
+    return NextResponse.json({ message: 'Institutions created successfully' }, { status: 200 });
   } catch (error) {
-    console.error('Error upserting data:', error);
-    return NextResponse.json({ error: 'Failed to upsert data' }, { status: 500 });
+    console.error('Error creating institutions:', error);
+    return NextResponse.json({ error: 'Failed to create institutions' }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
