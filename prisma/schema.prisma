@@ -8,24 +8,22 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-
 model Admin {
   id    Int    @id @default(autoincrement())
   name  String
   email String @unique
 }
 
-
 model Unit {
-  id      Int    @id @default(autoincrement())
-  name    String
-  email   String @unique
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String @unique
 }
 
 model Faculty {
-  id      Int    @id @default(autoincrement())
-  name    String
-  email   String @unique
+  id          Int          @id @default(autoincrement())
+  name        String
+  email       String       @unique
   Departments Department[]
 }
 
@@ -57,15 +55,15 @@ model Certificate {
 }
 
 model Department {
-  id             Int              @id @default(autoincrement())
-  name           String
-  email          String           @unique
-  Advisor        Advisor[]
-  Certificate    Certificate[]
-  Diploma        Diploma[]
-  Student        Student[]
-  facultyId     Int
-  Faculty       Faculty @relation(fields: [facultyId], references: [id])
+  id          Int           @id @default(autoincrement())
+  name        String
+  email       String        @unique
+  facultyId   Int
+  Advisor     Advisor[]
+  Certificate Certificate[]
+  Faculty     Faculty       @relation(fields: [facultyId], references: [id])
+  Diploma     Diploma[]
+  Student     Student[]
 }
 
 model Diploma {
@@ -81,19 +79,17 @@ model Diploma {
   @@index([studentId])
 }
 
-
-
 model Student {
-  id                      Int                       @id @default(autoincrement())
-  studentId               Int                       @unique
-  name                    String
-  email                   String                    @unique
-  departmentId            Int
-  advisorId               Int
-  Certificate             Certificate[]
-  Diploma                 Diploma[]
-  Advisor                 Advisor                   @relation(fields: [advisorId], references: [id])
-  Department              Department                @relation(fields: [departmentId], references: [id])
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  departmentId Int
+  advisorId    Int
+  studentId    Int           @unique
+  Certificate  Certificate[]
+  Diploma      Diploma[]
+  Advisor      Advisor       @relation(fields: [advisorId], references: [id])
+  Department   Department    @relation(fields: [departmentId], references: [id])
 
   @@index([advisorId])
   @@index([departmentId])
