@@ -1,10 +1,5 @@
 import React from 'react';
-
-interface Department {
-  id: number;
-  name: string;
-}
-
+import { Department } from '@/app/types/Department';
 interface AdvisorInfoCardProps {
   name: string;
   email: string;

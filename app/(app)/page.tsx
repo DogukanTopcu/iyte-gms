@@ -3,6 +3,10 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
+import AdvisorInfoCard from './_components/AdvisorInfoCard';
+import { Department } from '../types/Department';
+import { departments } from '../api/ubys/_shared/unit-and-department-data';
+
 
 
 export default function Dashboard() {
@@ -32,6 +36,12 @@ export default function Dashboard() {
               <p>{user?.email}</p>
               <p>{user?.id}</p>
               <p>{user?.department?.name}</p>
+
+              <AdvisorInfoCard
+                name={user?.advisor?.name || 'N/A'}
+                email={user?.advisor?.email || 'N/A'}
+                department={departments.find((dep: Department) => dep.id === user?.advisor?.departmentId) || { id: 0, name: 'N/A' }}></AdvisorInfoCard>
+
             </>
           )
           : userRole === 'secretariat' ? (
@@ -46,4 +56,4 @@ export default function Dashboard() {
         <p>Role: {userRole}</p>
       </main>
   );
-} 
+}
