@@ -14,7 +14,7 @@ import {
 import { AdvisorsData } from '../page';
 
 
-const StepTwoTable = ({ data, isLoading }: { data: AdvisorsData[], isLoading: boolean }) => {
+const StepThreeTable = ({ data, isLoading }: { data: AdvisorsData[], isLoading: boolean }) => {
   return (
     <Box sx={{ mt: 4 }}>
       {isLoading ? (
@@ -31,7 +31,8 @@ const StepTwoTable = ({ data, isLoading }: { data: AdvisorsData[], isLoading: bo
                   <TableCell>ID</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
-                  <TableCell>Department ID</TableCell>
+                  <TableCell>Department</TableCell>
+                  <TableCell>Faculty</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -41,7 +42,8 @@ const StepTwoTable = ({ data, isLoading }: { data: AdvisorsData[], isLoading: bo
                       <TableCell>{advisor.id}</TableCell>
                       <TableCell>{advisor.name}</TableCell>
                       <TableCell>{advisor.email}</TableCell>
-                      <TableCell>{advisor.departmentId}</TableCell>
+                      <TableCell>{advisor.Department.name}</TableCell>
+                      <TableCell>{advisor.Department.Faculty.name}</TableCell>
                     </TableRow>
                   ))
                 ) : (
@@ -58,4 +60,4 @@ const StepTwoTable = ({ data, isLoading }: { data: AdvisorsData[], isLoading: bo
   )
 }
 
-export default StepTwoTable
+export default StepThreeTable

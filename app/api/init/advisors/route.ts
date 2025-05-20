@@ -48,7 +48,16 @@ export async function POST() {
 
 export async function GET() {
     try {
-        const advisors = await prisma.advisor.findMany();
+        const advisors = await prisma.advisor.findMany({
+            include: {
+                Department: { 
+                    include: {
+                        Faculty: true,
+                    }
+                },
+            }
+        });
+        
         return NextResponse.json(advisors, { status: 200 });
     } catch (error) {
         console.error('Error fetching advisors:', error);

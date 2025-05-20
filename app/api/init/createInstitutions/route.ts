@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 export async function POST() {
   try {
     // Fetch data from UBYS API
-    const unitsAndDepartmentsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ubys/init/fetchunitanddepartments`, {
+    const unitsAndDepartmentsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ubys/init/fetchInstitutions`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -36,7 +36,17 @@ export async function POST(req: NextRequest) {
 
     const admin = await authenticateUser(process.env.NEXT_PUBLIC_API_URL + '/api/ubys/admins', email, password);
     if (admin) {
-      return NextResponse.json({ user: admin, role: admin.unit.name }, { status: 200 });
+      return NextResponse.json({ user: admin, role: "student affairs" }, { status: 200 });
+    }
+
+    const deptSecretariat = await authenticateUser(process.env.NEXT_PUBLIC_API_URL + '/api/ubys/secretariats', email, password);
+    if (deptSecretariat) {
+      return NextResponse.json({ user: deptSecretariat, role: deptSecretariat.name }, { status: 200 });
+    }
+
+    const facSecretariat = await authenticateUser(process.env.NEXT_PUBLIC_API_URL + '/api/ubys/secretariats', email, password);
+    if (facSecretariat) {
+      return NextResponse.json({ user: facSecretariat, role: facSecretariat.name }, { status: 200 });
     }
 
     return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });

@@ -12,7 +12,6 @@ import { UserCard } from './_components/StudentInfoCard';
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
   const { user, userRole } = useAuth();
   
   useEffect(() => {

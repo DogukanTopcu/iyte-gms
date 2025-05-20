@@ -39,6 +39,17 @@ export async function POST() {
                     advisorId: student.advisorId,
                 }
             });
+
+            await prisma.graduationStatus.upsert({
+                where: { studentId: student.id },
+                update: {
+                    status: "SYSTEM_APPROVAL",
+                },
+                create: {
+                    studentId: student.id,
+                    status: "SYSTEM_APPROVAL",
+                }
+            });
         }
         
         return NextResponse.json({ message: 'Students created successfully' }, { status: 200 });
@@ -52,7 +63,13 @@ export async function POST() {
 
 export async function GET() {
     try {
-        const students = await prisma.student.findMany();
+        const students = await prisma.student.findMany({
+            include: {
+                Department: true,
+                Advisor: true,
+            }
+        });
+        console.log(students);
         return NextResponse.json(students, { status: 200 });
     } catch (error) {
         console.error('Error fetching students:', error);

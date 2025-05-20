@@ -5,8 +5,9 @@ import {
   Stack,
 } from '@mui/material';
 import StepOneTables from './_components/StepOneTables';
-import StepTwoTable from './_components/StepThreeTable';
 import StepFourTables from './_components/StepFourTables';
+import StepTwoTables from './_components/StepTwoTables';
+import StepThreeTable from './_components/StepThreeTable';
 interface Step {
   id: number;
   title: string;
@@ -17,8 +18,12 @@ interface Step {
 
 export interface InstitutionData {
   departments: any[];
-  units: any[];
   faculties: any[];
+}
+
+export interface SecretariatsData {
+  deptSecretariats: any[];
+  facultySecretariats: any[];
 }
 
 export interface AdvisorsData {
@@ -26,6 +31,17 @@ export interface AdvisorsData {
   name: string;
   email: string;
   departmentId: number;
+  Department: {
+    id: number;
+    name: string;
+    email: string;
+    facultyId: number;
+    Faculty: {
+      id: number;
+      name: string;
+      email: string;
+    };
+  };
 }
 
 export interface StudentsData {
@@ -35,16 +51,28 @@ export interface StudentsData {
   email: string;
   departmentId: number;
   advisorId: number;
+  Department: {
+    id: number;
+    name: string;
+  };
+  Advisor: {
+    id: number;
+    name: string;
+  };
 }
-
 const InitStudent = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [maxStep, setMaxStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
   const [institutionData, setInstitutionData] = useState<InstitutionData>({
     departments: [],
-    units: [],
     faculties: []
+  });
+
+  const [secretariatsData, setSecretariatsData] = useState<SecretariatsData>({
+    deptSecretariats: [],
+    facultySecretariats: []
   });
 
   const [advisorsData, setAdvisorsData] = useState<AdvisorsData[]>([]);
@@ -53,14 +81,14 @@ const InitStudent = () => {
   const [steps, setSteps] = useState<Step[]>([
     {
       id: 1,
-      title: 'Units, Faculties, and Departments',
+      title: 'Faculties and Departments',
       description: 'Pull data from UBYS API and push to our database',
       status: 'pending'
     },
     {
       id: 2,
-      title: 'Administrators',
-      description: 'Pull faculty admins, department admins, and other admins from UBYS',
+      title: 'Secretariats',
+      description: 'Pull faculty secretariats from UBYS',
       status: 'pending'
     },
     {
@@ -80,6 +108,7 @@ const InitStudent = () => {
   useEffect(() => {
     const fetchData = async () => {
       await institutionsTableFetchData();
+      await secretariatsTableFetchData();
       await advisorsTableFetchData();
       await studentsTableFetchData();
     }
@@ -93,7 +122,7 @@ const InitStudent = () => {
   };
 
   const handleNextStep = () => {
-    if (currentStep < steps.length) {
+    if (currentStep < steps.length && currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
       setSteps(steps.map(step => 
         step.id === currentStep 
@@ -122,12 +151,9 @@ const InitStudent = () => {
     setIsLoading(true);
     try {
       if (currentStep === 1) {
-        const response = await fetch('/api/ubys/init/fetchInstitutions');
-        const data = await response.json();
 
         await fetch('/api/init/createInstitutions', {
           method: 'POST',
-          body: JSON.stringify(data)
         }).then(res => res.json()).then(data => {
           console.log(data);
         });
@@ -135,18 +161,20 @@ const InitStudent = () => {
         await institutionsTableFetchData();
       }
 
-      else if (currentStep === 3) {
-        const response = await fetch('/api/ubys/advisors', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
+      else if (currentStep === 2) {
+        await fetch('/api/init/secretariats', {
+          method: 'POST',
+        }).then(res => res.json()).then(data => {
+          console.log(data);
         });
-        const data = await response.json();
+
+        await secretariatsTableFetchData();
+      }
+
+      else if (currentStep === 3) {
 
         await fetch('/api/init/advisors', {
           method: 'POST',
-          body: JSON.stringify(data)
         }).then(res => res.json()).then(data => {
           console.log(data);
         });
@@ -155,18 +183,8 @@ const InitStudent = () => {
       }
 
       else if (currentStep === 4) {
-        const response = await fetch('/api/ubys/students', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        const data = await response.json();
-        console.log(data);
-
         await fetch('/api/init/students', {
           method: 'POST',
-          body: JSON.stringify(data)
         }).then(res => res.json()).then(data => {
           console.log(data);
         });
@@ -191,12 +209,6 @@ const InitStudent = () => {
           'Content-Type': 'application/json'
         }
       });
-      const unitResponse = await fetch('/api/init/units', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
       const facultyResponse = await fetch('/api/init/faculties', {
         method: 'GET',
         headers: {
@@ -204,15 +216,40 @@ const InitStudent = () => {
         }
       });
       const departments = await deptResponse.json();
-      const units = await unitResponse.json();
       const faculties = await facultyResponse.json();
+
       // Update the institution data state
       setInstitutionData({
         departments: departments || [],
-        units: units || [],
         faculties: faculties || []
       });
-      console.log(departments, units, faculties);
+      if (departments.length > 0 && faculties.length > 0) {
+        setMaxStep(2);
+      }
+    } catch (error) {
+      console.error('Error fetching table data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const secretariatsTableFetchData = async () => {
+    setIsLoading(true);
+    try {
+      const secretariatsResponse = await fetch('/api/init/secretariats', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await secretariatsResponse.json();
+      setSecretariatsData({
+        deptSecretariats: data.deptSecretariatsWithDepartment,
+        facultySecretariats: data.facultySecretariatsWithFaculty
+      }); 
+      if (data.deptSecretariatsWithDepartment.length > 0 && data.facultySecretariatsWithFaculty.length > 0) {
+        setMaxStep(3);
+      }
     } catch (error) {
       console.error('Error fetching table data:', error);
     } finally {
@@ -230,7 +267,10 @@ const InitStudent = () => {
         }
       });
       const data = await response.json();
-      setAdvisorsData(data);
+      setAdvisorsData(data as AdvisorsData[]);
+      if (data.length > 0) {
+        setMaxStep(4);
+      }
     } catch (error) {
       console.error('Error fetching table data:', error);
     } finally {
@@ -249,6 +289,9 @@ const InitStudent = () => {
       });
       const data = await response.json();
       setStudentsData(data);
+      if (data.length > 0) {
+        setMaxStep(4);
+      }
     } catch (error) {
       console.error('Error fetching table data:', error);
     } finally {
@@ -270,7 +313,7 @@ const renderStepContent = () => {
             variant="contained"
             color="primary"
             onClick={() => fetchData()}
-            disabled={isLoading || (!isLoading && currentStep == 1 ? institutionData.departments.length > 0 : false) || (!isLoading && currentStep == 3 ? advisorsData.length > 0 : false) || (!isLoading && currentStep == 4 ? studentsData.length > 0 : false)}
+            disabled={isLoading || (!isLoading && currentStep == 1 ? institutionData.departments.length > 0 : false) || (!isLoading && currentStep == 2 ? secretariatsData.deptSecretariats.length > 0 && secretariatsData.facultySecretariats.length > 0 : false) || (!isLoading && currentStep == 3 ? advisorsData.length > 0 : false) || (!isLoading && currentStep == 4 ? studentsData.length > 0 : false)}
           >
             Fetch Data
           </Button>
@@ -296,8 +339,11 @@ const renderStepContent = () => {
       {currentStep === 1 && (
         <StepOneTables data={institutionData} isLoading={isLoading} />
       )}
+      {currentStep === 2 && (
+        <StepTwoTables data={secretariatsData} isLoading={isLoading} />
+      )}
       {currentStep === 3 && (
-        <StepTwoTable data={advisorsData} isLoading={isLoading} />
+        <StepThreeTable data={advisorsData} isLoading={isLoading} />
       )}
       {currentStep === 4 && (
         <StepFourTables data={studentsData} isLoading={isLoading} />

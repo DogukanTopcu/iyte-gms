@@ -4,9 +4,9 @@ import { TableCell } from '@mui/material'
 import { TableContainer } from '@mui/material'
 import { Box } from '@mui/material'
 import React from 'react'
-import { InstitutionData } from '../page'
+import { SecretariatsData } from '../page'
 
-const StepOneTables = ({ data, isLoading }: { data: InstitutionData, isLoading: boolean }) => {
+const StepOneTables = ({ data, isLoading }: { data: SecretariatsData, isLoading: boolean }) => {
   return (
     <div>
         <Box sx={{ mt: 4 }}>
@@ -16,8 +16,8 @@ const StepOneTables = ({ data, isLoading }: { data: InstitutionData, isLoading: 
             </Box>
           ) : (
             <>
-              {/* Departments Table */}
-              <Typography variant="h6" sx={{ mb: 2 }}>Departments</Typography>
+              {/* Faculty Secretariats Table */}
+              <Typography variant="h6" sx={{ mb: 2 }}>Faculty Secretariats</Typography>
               <TableContainer component={Paper} sx={{ mb: 4 }}>
                 <Table>
                   <TableHead>
@@ -29,13 +29,13 @@ const StepOneTables = ({ data, isLoading }: { data: InstitutionData, isLoading: 
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {data.departments.length > 0 ? (
-                      data.departments.map((dept) => (
-                        <TableRow key={dept.id}>
-                          <TableCell>{dept.id}</TableCell>
-                          <TableCell>{dept.name}</TableCell>
-                          <TableCell>{dept.email}</TableCell>
-                          <TableCell>{dept.Faculty.name}</TableCell>
+                    {data.facultySecretariats.length > 0 ? (
+                      data.facultySecretariats.map((faculty) => (
+                        <TableRow key={faculty.id}>
+                          <TableCell>{faculty.id}</TableCell>
+                          <TableCell>{faculty.name}</TableCell>
+                          <TableCell>{faculty.email}</TableCell>
+                          <TableCell>{faculty.Faculty.name}</TableCell>
                         </TableRow>
                       ))
                     ) : (
@@ -48,8 +48,8 @@ const StepOneTables = ({ data, isLoading }: { data: InstitutionData, isLoading: 
               </TableContainer>
 
               
-              {/* Faculties Table */}
-              <Typography variant="h6" sx={{ mb: 2 }}>Faculties</Typography>
+              {/* Department Secretariats Table */}
+              <Typography variant="h6" sx={{ mb: 2 }}>Department Secretariats</Typography>
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>
@@ -57,15 +57,17 @@ const StepOneTables = ({ data, isLoading }: { data: InstitutionData, isLoading: 
                       <TableCell>ID</TableCell>
                       <TableCell>Name</TableCell>
                       <TableCell>Email</TableCell>
+                      <TableCell>Department</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {data.faculties.length > 0 ? (
-                      data.faculties.map((faculty) => (
-                        <TableRow key={faculty.id}>
-                          <TableCell>{faculty.id}</TableCell>
-                          <TableCell>{faculty.name}</TableCell>
-                          <TableCell>{faculty.email}</TableCell>
+                    {data.deptSecretariats.length > 0 ? (
+                      data.deptSecretariats.map((dept) => (
+                        <TableRow key={dept.id}>
+                          <TableCell>{dept.id}</TableCell>
+                          <TableCell>{dept.name}</TableCell>
+                          <TableCell>{dept.email}</TableCell>
+                          <TableCell>{dept.Department.name}</TableCell>
                         </TableRow>
                       ))
                     ) : (

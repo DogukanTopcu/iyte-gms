@@ -1,3 +1,5 @@
+"use client";
+import { useEffect, useState } from "react";
 import { User } from "../../context/AuthContext";
 
 interface UserCardProps {
@@ -7,6 +9,43 @@ interface UserCardProps {
 }
 
 export const UserCard = ({ user, isLoading, error }: UserCardProps) => {
+  const [status, setStatus] = useState<string | null>(null);
+  const [statusColor, setStatusColor] = useState<string>("bg-gray-200");
+
+  useEffect(() => {
+    const getStatusName = (status: string) => {
+      switch (status) {
+        case "SYSTEM_APPROVAL":
+          setStatus("System Approval");
+          setStatusColor("bg-yellow-100 text-yellow-800 border-yellow-300");
+          break;
+        case "ADVISOR_APPROVAL":
+          setStatus("Advisor Approval");
+          setStatusColor("bg-blue-100 text-blue-800 border-blue-300");
+          break;
+        case "SECRETARIAT_APPROVAL":
+          setStatus("Secretariat Approval");
+          setStatusColor("bg-purple-100 text-purple-800 border-purple-300");
+          break;
+        case "GRADUATED":
+          setStatus("Graduated");
+          setStatusColor("bg-green-100 text-green-800 border-green-300");
+          break;
+        default:
+          setStatus("ERROR");
+          setStatusColor("bg-red-100 text-red-800 border-red-300");
+      }
+    };
+    if (user) {
+      const fetchStatus = async () => {
+        const response = await fetch(`/api/student/graduationStatus?id=${user.studentId}`);
+        const data = await response.json();
+        getStatusName(data.status);
+      };
+      fetchStatus();
+    }
+  }, [user]);
+  
   if (isLoading) {
     return (
       <div className="animate-pulse bg-white p-6 rounded-lg shadow-md">
@@ -75,9 +114,11 @@ export const UserCard = ({ user, isLoading, error }: UserCardProps) => {
           </div>
         )}
         {user && (
-          <div className="flex">
-            <span className="font-medium text-gray-500 w-32">GPA:</span>
-            <span className="text-gray-800">{}</span>
+          <div className="flex items-center">
+            <span className="font-medium text-gray-500 w-32">Status:</span>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor} border`}>
+              {status}
+            </span>
           </div>
         )}
       </div>

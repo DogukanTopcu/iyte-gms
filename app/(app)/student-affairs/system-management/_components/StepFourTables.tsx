@@ -30,20 +30,19 @@ const StepFourTables = ({ data, isLoading }: { data: StudentsData[], isLoading: 
                   <TableCell>ID</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
-                  <TableCell>Department ID</TableCell>
-                  <TableCell>Advisor ID</TableCell>
+                  <TableCell>Department</TableCell>
+                  <TableCell>Advisor</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {data.length > 0 ? (
                   data.map((student) => (
                     <TableRow key={student.id}>
-                      <TableCell>{student.id}</TableCell>
                       <TableCell>{student.studentId}</TableCell>
                       <TableCell>{student.name}</TableCell>
                       <TableCell>{student.email}</TableCell>
-                      <TableCell>{student.departmentId}</TableCell>
-                      <TableCell>{student.advisorId}</TableCell>
+                      <TableCell>{student.Department.name}</TableCell>
+                      <TableCell>{student.Advisor.name}</TableCell>
                     </TableRow>
                   ))
                 ) : (

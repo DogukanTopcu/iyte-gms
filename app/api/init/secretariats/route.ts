@@ -63,3 +63,27 @@ export async function POST() {
     await prisma.$disconnect();
   }
 } 
+
+
+export async function GET() {
+  try {
+    const deptSecretariatsWithDepartment = await prisma.deptSecretariat.findMany({
+      include: {
+        Department: true
+      }
+    });
+
+    const facultySecretariatsWithFaculty = await prisma.facSecretariat.findMany({
+      include: {
+        Faculty: true
+      }
+    });
+
+    return NextResponse.json({ deptSecretariatsWithDepartment, facultySecretariatsWithFaculty }, { status: 200 });
+  } catch (error) {
+    console.error('Error fetching secretariats:', error);
+    return NextResponse.json({ error: 'Failed to fetch secretariats' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
