@@ -33,16 +33,17 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className='flex min-h-screen bg-gray-100 relative overflow-hidden'>
-      {/* Sidebar container - only takes space on desktop */}
-      <div className={`md:w-72 w-0 transition-all duration-300 overflow-visible`}>
+      {/* Sidebar wrapper - this keeps the space for the sidebar in desktop view */}
+      <div className="md:w-72 w-0 flex-shrink-0">
         <Sidebar 
           activePage={pathname.split('/').pop() || ''} 
           userRole={userRole} 
           onSidebarToggle={handleSidebarToggle}
         />
       </div>
-      {/* Main content - takes full width on mobile when sidebar is closed */}
-      <div className={`flex-1 transition-all duration-300  pt-4`}>
+      
+      {/* Main content - takes full width on mobile, and respects sidebar in desktop */}
+      <div className="flex-1 transition-all duration-300 pt-4">
         {children}
       </div>
     </div>

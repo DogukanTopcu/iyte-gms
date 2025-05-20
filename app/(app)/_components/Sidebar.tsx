@@ -34,7 +34,7 @@ export default function Sidebar({ activePage = 'home', userRole, onSidebarToggle
       {/* Mobile toggle button - only visible on small screens */}
       <button 
         onClick={toggleSidebar}
-        className="fixed top-2 left-2 z-50 p-2   bg-red-800 rounded-md text-white md:hidden"
+        className="fixed top-2 left-2 z-50 p-2 bg-red-800 rounded-md text-white md:hidden"
         aria-label="Toggle sidebar"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -46,8 +46,8 @@ export default function Sidebar({ activePage = 'home', userRole, onSidebarToggle
         </svg>
       </button>
 
-      <aside className={`w-full h-full max-h-screen bg-gradient-to-b from-red-800 to-red-900 text-white flex flex-col sticky top-0 left-0 bottom-0 z-40 transition-all duration-300 
-        md:translate-x-0 md:relative absolute ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} md:overflow-visible overflow-hidden`}>
+      <aside className={`w-full h-full max-h-screen bg-gradient-to-b from-red-800 to-red-900 text-white flex flex-col md:fixed md:left-0 md:top-0 md:bottom-0 md:w-72 md:z-30
+        transition-all duration-300 absolute z-40 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 overflow-hidden md:overflow-auto`}>
         {/* Logo section */}
         <div className="flex items-center justify-center py-6 border-b border-red-700">
           <div className="bg-white p-1 rounded-full shadow-md">
