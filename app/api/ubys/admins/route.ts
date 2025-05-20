@@ -1,7 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { admins } from '../_shared/admin-data';
-import { units } from '../_shared/unit-and-department-data';
+import { units } from '../_shared/faculty-and-department-data';
 
 // Handler function to process requests
 export async function GET(req: NextRequest) {

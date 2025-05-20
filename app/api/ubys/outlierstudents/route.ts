@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { students } from '../_shared/students-data';
-import { departments } from '../_shared/unit-and-department-data';
+import { departments } from '../_shared/faculty-and-department-data';
 import { advisors } from '../_shared/advisors-data';
 
 // Handler function to process requests

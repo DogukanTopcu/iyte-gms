@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { units, departments, faculties } from '../../_shared/unit-and-department-data';
+import { units, departments, faculties } from '../../_shared/faculty-and-department-data';
 
 export async function GET() {
   try {

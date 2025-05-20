@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import AdvisorInfoCard from './_components/AdvisorInfoCard';
 import { Department } from '../types/Department';
-import { departments } from '../api/ubys/_shared/unit-and-department-data';
+import { departments } from '../api/ubys/_shared/faculty-and-department-data';
 
 import { UserCard } from './student/_components/StudentInfoCard';
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { advisors } from '../_shared/advisors-data';
-import { departments } from '../_shared/unit-and-department-data';
+import { departments } from '../_shared/faculty-and-department-data';
 
 // Handler function to process requests
 export async function GET(req: NextRequest) {
