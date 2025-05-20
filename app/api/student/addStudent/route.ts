@@ -20,6 +20,7 @@ export async function POST(req: Request) {
                 advisorId: data.advisorId,
             },
             create: {
+                id: data.id,
                 studentId: data.studentId,
                 name: data.name,
                 email: data.email,

@@ -38,6 +38,7 @@ const AddOutlierPage = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id: selectedStudent.id,
           studentId: selectedStudent.studentId,
           name: selectedStudent.name,
           email: selectedStudent.email,
