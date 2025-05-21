@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import AdvisorInfoCard from './_components/AdvisorInfoCard';
 import { Department } from '../types/Department';
 import { departments } from '../api/ubys/_shared/faculty-and-department-data';
-
+import StudentListTable from './_components/StudentListTable';
 import { UserCard } from './_components/StudentInfoCard';
 
 export default function Dashboard() {
@@ -34,6 +33,7 @@ export default function Dashboard() {
                 name={user?.name || 'N/A'}
                 email={user?.email || 'N/A'}
                 department={departments.find((dep: Department) => dep.id === user?.departmentId) || { id: 0, name: 'N/A' }} />
+              <StudentListTable userId={user?.id || 0} role="advisor" />
             </>
           )
           : userRole === 'student' ? (

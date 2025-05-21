@@ -69,7 +69,6 @@ export async function GET() {
                 Advisor: true,
             }
         });
-        console.log(students);
         return NextResponse.json(students, { status: 200 });
     } catch (error) {
         console.error('Error fetching students:', error);

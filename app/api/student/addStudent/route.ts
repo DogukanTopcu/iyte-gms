@@ -29,6 +29,17 @@ export async function POST(req: Request) {
             },
         });
 
+        await prisma.graduationStatus.upsert({
+            where: { studentId: newStudent.id },
+            update: {
+                status: "ADVISOR_APPROVAL",
+            },
+            create: {
+                studentId: newStudent.id,
+                status: "ADVISOR_APPROVAL",
+            },
+        });
+
         return NextResponse.json(newStudent, { status: 201 });
     } catch (error) {
         return NextResponse.json({ error: 'Failed to add student' }, { status: 500 });

@@ -38,8 +38,6 @@ export default function StudentsTable({ students }: StudentsTableProps) {
       return;
     }
     
-    // Here you would implement the actual approval logic
-    console.log('Approving transcripts for students:', selectedStudents);
     // Reset selection after approval
     setSelectedStudents([]);
   };

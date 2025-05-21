@@ -154,9 +154,7 @@ const InitStudent = () => {
 
         await fetch('/api/init/createInstitutions', {
           method: 'POST',
-        }).then(res => res.json()).then(data => {
-          console.log(data);
-        });
+        })
 
         await institutionsTableFetchData();
       }
@@ -164,8 +162,6 @@ const InitStudent = () => {
       else if (currentStep === 2) {
         await fetch('/api/init/secretariats', {
           method: 'POST',
-        }).then(res => res.json()).then(data => {
-          console.log(data);
         });
 
         await secretariatsTableFetchData();
@@ -175,8 +171,6 @@ const InitStudent = () => {
 
         await fetch('/api/init/advisors', {
           method: 'POST',
-        }).then(res => res.json()).then(data => {
-          console.log(data);
         });
 
         await advisorsTableFetchData();
@@ -185,8 +179,6 @@ const InitStudent = () => {
       else if (currentStep === 4) {
         await fetch('/api/init/students', {
           method: 'POST',
-        }).then(res => res.json()).then(data => {
-          console.log(data);
         });
 
         await studentsTableFetchData();

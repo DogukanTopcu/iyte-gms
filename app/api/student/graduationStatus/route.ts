@@ -21,7 +21,6 @@ export async function GET(
       return NextResponse.json({ status: 'Error: Invalid Student ID format in path parameter' }, { status: 400 });
     }
 
-    console.log(studentPkId);
     const status = await prisma.graduationStatus.findFirst({
       where: {
         Student: {studentId: studentPkId}

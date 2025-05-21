@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { departmentSecretariats, facultySecretariats } from '../ubys/_shared';
 
 const prisma = new PrismaClient();
 
@@ -91,6 +92,26 @@ export async function GET(req: NextRequest) {
       });
       if (admin) {
         return NextResponse.json({ user: admin, role: 'Student Affairs' }, { status: 200 });
+      }
+    }
+
+    const fSecretariat = facultySecretariats.filter(secretariat => secretariat.name.toLowerCase() === role)[0];
+    if (fSecretariat) {
+      const secretariat = await prisma.facSecretariat.findUnique({
+        where: { email: email }
+      });
+      if (secretariat) {
+        return NextResponse.json({ user: secretariat, role: secretariat.name }, { status: 200 });
+      }
+    }
+
+    const dSecretariat = departmentSecretariats.filter(secretariat => secretariat.name.toLowerCase() === role)[0];
+    if (dSecretariat) {
+      const secretariat = await prisma.deptSecretariat.findUnique({
+        where: { email: email }
+      });
+      if (secretariat) {
+        return NextResponse.json({ user: secretariat, role: secretariat.name }, { status: 200 });
       }
     }
 

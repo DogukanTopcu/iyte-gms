@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { User } from "../../context/AuthContext";
+import statusName from "@/app/constants/graduation-status";
 
 interface UserCardProps {
   user: User | null;
@@ -13,34 +14,12 @@ export const UserCard = ({ user, isLoading, error }: UserCardProps) => {
   const [statusColor, setStatusColor] = useState<string>("bg-gray-200");
 
   useEffect(() => {
-    const getStatusName = (status: string) => {
-      switch (status) {
-        case "SYSTEM_APPROVAL":
-          setStatus("System Approval");
-          setStatusColor("bg-yellow-100 text-yellow-800 border-yellow-300");
-          break;
-        case "ADVISOR_APPROVAL":
-          setStatus("Advisor Approval");
-          setStatusColor("bg-blue-100 text-blue-800 border-blue-300");
-          break;
-        case "SECRETARIAT_APPROVAL":
-          setStatus("Secretariat Approval");
-          setStatusColor("bg-purple-100 text-purple-800 border-purple-300");
-          break;
-        case "GRADUATED":
-          setStatus("Graduated");
-          setStatusColor("bg-green-100 text-green-800 border-green-300");
-          break;
-        default:
-          setStatus("ERROR");
-          setStatusColor("bg-red-100 text-red-800 border-red-300");
-      }
-    };
     if (user) {
       const fetchStatus = async () => {
         const response = await fetch(`/api/student/graduationStatus?id=${user.studentId}`);
         const data = await response.json();
-        getStatusName(data.status);
+        setStatus(statusName.find((status) => status.status === data.status)?.name || "ERROR");
+        setStatusColor(statusName.find((status) => status.status === data.status)?.color || "bg-red-100 text-red-800 border-red-300");
       };
       fetchStatus();
     }
