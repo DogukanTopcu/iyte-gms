@@ -8,22 +8,53 @@ import StepOneTables from './_components/StepOneTables';
 import StepFourTables from './_components/StepFourTables';
 import StepTwoTables from './_components/StepTwoTables';
 import StepThreeTable from './_components/StepThreeTable';
+
+interface Department {
+  id: number;
+  name: string;
+  email: string;
+  facultyId: number;
+  Faculty: Faculty;
+}
+
+interface Faculty {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface DeptSecretariat {
+  id: number;
+  name: string;
+  email: string;
+  departmentId: number;
+  Department: Department;
+}
+
+interface FacultySecretariat {
+  id: number;
+  name: string;
+  email: string;
+  facultyId: number;
+  Faculty: Faculty;
+}
+
+
 interface Step {
   id: number;
   title: string;
   description: string;
   status: 'pending' | 'in-progress' | 'completed';
-  data?: any[];
 }
 
 export interface InstitutionData {
-  departments: any[];
-  faculties: any[];
+  departments: Department[];
+  faculties: Faculty[];
 }
 
 export interface SecretariatsData {
-  deptSecretariats: any[];
-  facultySecretariats: any[];
+  deptSecretariats: DeptSecretariat[];
+  facultySecretariats: FacultySecretariat[];
 }
 
 export interface AdvisorsData {

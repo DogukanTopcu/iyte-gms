@@ -19,20 +19,12 @@ interface Student {
   grade: number
 }
 
-interface OutlierData {
-  studentId: number
-  isOutlier: boolean
-  reason?: string
-}
-
 const AddOutlierPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<Student[]>([])
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [outlierData, setOutlierData] = useState<OutlierData | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -76,10 +68,6 @@ const AddOutlierPage = () => {
 
   const handleSearch = async (query: string) => {
     setSearchQuery(query)
-    if (query.trim() === '') {
-      setSearchResults([])
-      return
-    }
 
     // Update URL with search parameter
     router.push(`/advisor/add-outlier?studentId=${query}`);
@@ -210,24 +198,6 @@ const AddOutlierPage = () => {
             <div className="mt-4 text-gray-600">Loading data...</div>
           )}
 
-          {outlierData && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold mb-2">Outlier Status</h3>
-              <div className="space-y-2">
-                <div>
-                  <span className="font-medium">Is Outlier:</span>{' '}
-                  <span className={outlierData.isOutlier ? 'text-red-600' : 'text-green-600'}>
-                    {outlierData.isOutlier ? 'Yes' : 'No'}
-                  </span>
-                </div>
-                {outlierData.reason && (
-                  <div>
-                    <span className="font-medium">Reason:</span> {outlierData.reason}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
 
           <div className="mt-6 flex flex-wrap gap-3">
             {isExists ? (

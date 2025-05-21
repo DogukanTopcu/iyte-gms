@@ -8,29 +8,6 @@ import { usePathname } from 'next/navigation';
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const { userRole } = useAuth();
   const pathname = usePathname();
-  const [isMobileView, setIsMobileView] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  // Check if we're on mobile view on client side
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth < 768); // 768px is the md breakpoint in Tailwind
-    };
-    
-    // Initial check
-    handleResize();
-    
-    // Add event listener
-    window.addEventListener('resize', handleResize);
-    
-    // Cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Handle sidebar state changes
-  const handleSidebarToggle = (isOpen: boolean) => {
-    setIsSidebarOpen(isOpen);
-  };
 
   return (
     <ProtectedLayout>
@@ -40,7 +17,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           <Sidebar 
             activePage={pathname.split('/').pop() || ''} 
             userRole={userRole} 
-            onSidebarToggle={handleSidebarToggle}
           />
         </div>
         

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { advisors } from '../../_shared/advisors-data';
 
 export async function GET() {

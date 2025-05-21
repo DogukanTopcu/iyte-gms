@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useAuth, UserRole } from '@/app/context/AuthContext';
 import StudentSidebar from './sidebar_items/StudentSidebar';
 import AdvisorSidebar from './sidebar_items/AdvisorSidebar';
@@ -14,7 +12,6 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activePage = 'home', userRole, onSidebarToggle }: SidebarProps) {
-  const router = useRouter();
   const { logout } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 

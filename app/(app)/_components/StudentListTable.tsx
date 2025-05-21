@@ -10,24 +10,25 @@ import React, { useEffect, useState } from 'react'
 import statusName from '@/app/constants/graduation-status'
 import { useRouter } from 'next/navigation'
 
-// interface Student {
-//   id: number;
-//   studentId: number;
-//   name: string;
-//   email: string;
-//   Department: {
-//     name: string;
-//   };
-//   Advisor: {
-//     name: string;
-//   };
-//   GraduationStatus: {
-//     status: string;
-//   };
-// }
+interface Student {
+  id: number;
+  studentId: number;
+  name: string;
+  email: string;
+  Department: {
+    name: string;
+  };
+  Advisor: {
+    name: string;
+  };
+  GraduationStatus: {
+    status: string;
+  };
+}
+
 const StudentListTable = ({ userId, role }: { userId: number, role: string }) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [students, setStudents] = useState<any[]>([]);
+    const [students, setStudents] = useState<Student[]>([]);
 
     const router = useRouter();
 

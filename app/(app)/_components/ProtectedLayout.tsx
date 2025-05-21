@@ -9,7 +9,7 @@ export default function ProtectedLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { isAuthenticated, isLoading: isAuthLoading, userRole } = useAuth(); // Use isLoading from AuthContext
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth(); // Use isLoading from AuthContext
   const router = useRouter();
 
   useEffect(() => {

@@ -7,7 +7,7 @@ import Image from 'next/image';
 const StudentTranscriptPage = ({ params }: { params: { id: string } }) => {
   const { id } = params;
   const [student, setStudent] = useState<Student | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [department, setDepartment] = useState<{name: string} | null>(null);
 
   useEffect(() => {

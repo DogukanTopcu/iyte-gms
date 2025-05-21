@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { faculties, departments } from '../../_shared/faculty-and-department-data';
 
 export async function GET() {

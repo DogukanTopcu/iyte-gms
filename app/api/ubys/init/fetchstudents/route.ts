@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { students } from '../../_shared/students-data';
 import { transcripts } from '../../_shared/transcript-data';
 
