@@ -30,8 +30,14 @@ export async function GET(req: NextRequest) {
 
     if (advisorId !== undefined && studentId !== undefined) {
       const student = students.find((student) => student.advisorId === advisorId && student.studentId === studentId);
-      const department = departments.find((department) => department.id === student?.departmentId);
-      const advisor = advisors.find((advisor) => advisor.id === student?.advisorId);
+      
+      if (!student) {
+        return NextResponse.json({ message: 'This student is not assigned to this advisor or does not exist.' }, { status: 404 });
+      }
+      
+      const department = departments.find((department) => department.id === student.departmentId);
+      const advisor = advisors.find((advisor) => advisor.id === student.advisorId);
+      
       return NextResponse.json({ ...student, department, advisor }, { status: 200 });
     }
 

@@ -82,10 +82,11 @@ const AddOutlierPage = () => {
       'Content-Type': 'application/json',
     },
     })
-    .then(res => {
+    .then(async res => {
         if (!res.ok) {
             setSelectedStudent(null)
-            throw new Error('Failed to fetch student data')
+            const data = await res.json();
+            throw new Error(data.message || 'Failed to fetch student data');
         }
         return res.json();
     })
