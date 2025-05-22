@@ -7,6 +7,7 @@ import { Department } from '../types/Department';
 import { departments } from '../api/ubys/_shared/faculty-and-department-data';
 import StudentListTable from './_components/StudentListTable';
 import { UserCard } from './_components/StudentInfoCard';
+import DeptSecretariatInfoCard from './_components/DeptSecretariatInfoCard';
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -51,6 +52,10 @@ export default function Dashboard() {
             <>
               {isLoading && <p>Loading secretariat data...</p>}
               {error && <p className="text-red-600">Error: {error}</p>}
+              <DeptSecretariatInfoCard
+                name={user?.name || 'N/A'}
+                email={user?.email || 'N/A'}
+                department={departments.find((dep: Department) => dep.id === user?.departmentId) || { id: 0, name: 'N/A' }} />
             </>
           ) : null
         }

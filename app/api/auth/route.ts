@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
     const deptSecretariat = await authenticateUser(process.env.NEXT_PUBLIC_API_URL + '/api/ubys/secretariats', email, password);
     if (deptSecretariat) {
-      return NextResponse.json({ user: deptSecretariat, role: deptSecretariat.name }, { status: 200 });
+      return NextResponse.json({ user: deptSecretariat, role: 'secretariat' }, { status: 200 });
     }
 
     const facSecretariat = await authenticateUser(process.env.NEXT_PUBLIC_API_URL + '/api/ubys/secretariats', email, password);
@@ -95,19 +95,22 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const fSecretariat = facultySecretariats.filter(secretariat => secretariat.name.toLowerCase() === role)[0];
-    if (fSecretariat) {
-      const secretariat = await prisma.facSecretariat.findUnique({
-        where: { email: email }
-      });
-      if (secretariat) {
-        return NextResponse.json({ user: secretariat, role: secretariat.name }, { status: 200 });
+    if (role === 'secretariat') {
+      // Check in departmentSecretariats array
+      const deptMatch = departmentSecretariats.find(secretariat => secretariat.email === email);
+      if (deptMatch) {
+        const secretariat = await prisma.deptSecretariat.findUnique({
+          where: { email: email }
+        });
+        if (secretariat) {
+          return NextResponse.json({ user: secretariat, role: 'secretariat' }, { status: 200 });
+        }
       }
     }
 
-    const dSecretariat = departmentSecretariats.filter(secretariat => secretariat.name.toLowerCase() === role)[0];
-    if (dSecretariat) {
-      const secretariat = await prisma.deptSecretariat.findUnique({
+    const fSecretariat = facultySecretariats.filter(secretariat => secretariat.name.toLowerCase() === role)[0];
+    if (fSecretariat) {
+      const secretariat = await prisma.facSecretariat.findUnique({
         where: { email: email }
       });
       if (secretariat) {
