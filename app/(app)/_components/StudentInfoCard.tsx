@@ -12,14 +12,24 @@ interface UserCardProps {
 export const UserCard = ({ user, isLoading, error }: UserCardProps) => {
   const [status, setStatus] = useState<string | null>(null);
   const [statusColor, setStatusColor] = useState<string>("bg-gray-200");
+  const [statusId, setStatusId] = useState<number>(1);
+  const [progressPercentage, setProgressPercentage] = useState<number>(0);
 
   useEffect(() => {
     if (user) {
       const fetchStatus = async () => {
         const response = await fetch(`/api/student/graduationStatus?id=${user.studentId}`);
         const data = await response.json();
-        setStatus(statusName.find((status) => status.status === data.status)?.name || "ERROR");
-        setStatusColor(statusName.find((status) => status.status === data.status)?.color || "bg-red-100 text-red-800 border-red-300");
+        const currentStatus = statusName.find((status) => status.status === data.status);
+        setStatus(currentStatus?.name || "ERROR");
+        setStatusColor(currentStatus?.color || "bg-red-100 text-red-800 border-red-300");
+        
+        if (currentStatus) {
+          setStatusId(currentStatus.id);
+          // Calculate progress as percentage (current status / total statuses)
+          const maxStatusId = statusName.length;
+          setProgressPercentage((currentStatus.id / maxStatusId) * 100);
+        }
       };
       fetchStatus();
     }
@@ -51,6 +61,18 @@ export const UserCard = ({ user, isLoading, error }: UserCardProps) => {
       </div>
     );
   }
+
+  // Determine color for progress bar based on current status
+  const getProgressBarColor = () => {
+    switch(statusId) {
+      case 1: return "bg-yellow-500";
+      case 2: return "bg-blue-500";
+      case 3: return "bg-purple-500";
+      case 4: return "bg-pink-500";
+      case 5: return "bg-green-500";
+      default: return "bg-gray-500";
+    }
+  };
 
   return (
     <div className="bg-white mb-5 p-6 rounded-lg shadow-md border border-gray-200">
@@ -93,12 +115,52 @@ export const UserCard = ({ user, isLoading, error }: UserCardProps) => {
           </div>
         )}
         {user && (
-          <div className="flex items-center">
-            <span className="font-medium text-gray-500 w-32">Status:</span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor} border`}>
-              {status}
-            </span>
-          </div>
+          <>
+            <div className="flex items-center">
+              <span className="font-medium text-gray-500 w-32">Status:</span>
+              <div>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor} border`}>
+                  {status}
+                </span>
+                <span className="ml-2 text-sm text-gray-500">
+                  Step {statusId} of {statusName.length}
+                </span>
+              </div>
+            </div>
+            
+            <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <div className="flex justify-between mb-2">
+                <span className="font-medium text-gray-700">Graduation Progress</span>
+                <span className="text-sm font-medium text-gray-700">{progressPercentage.toFixed(0)}%</span>
+              </div>
+              
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div 
+                  className={`${getProgressBarColor()} h-3 rounded-full transition-all duration-500`} 
+                  style={{ width: `${progressPercentage}%` }}
+                ></div>
+              </div>
+              
+              <div className="mt-4 grid grid-cols-5 gap-1 text-xs">
+                {statusName.map((item, index) => {
+                  const isCompleted = statusId > item.id;
+                  const isCurrent = statusId === item.id;
+                  
+                  return (
+                    <div key={item.id} className="flex flex-col items-center">
+                      <div className={`flex items-center justify-center w-6 h-6 rounded-full mb-1 
+                        ${isCompleted ? getProgressBarColor() : 
+                          isCurrent ? 'bg-white border-2 border-' + getProgressBarColor().replace('bg-', '') : 
+                          'bg-gray-200'}`}>
+                        {isCompleted ? '✓' : item.id}
+                      </div>
+                      <span className={`text-center ${isCurrent ? 'font-medium' : ''}`}>{item.name}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>
