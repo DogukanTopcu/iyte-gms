@@ -13,12 +13,18 @@ const statusName = [
     },
     {
         id: 3,
-        status: "SECRETARIAT_APPROVAL",
+        status: "DEPARTMENT_SECRETARIAT_APPROVAL",
         name: "Secretariat Approval",
         color: "bg-purple-100 text-purple-800 border-purple-300"
     },
     {
         id: 4,
+        status: "FACULTY_SECRETARIAT_APPROVAL",
+        name: "Faculty Approval",
+        color: "bg-pink-100 text-pink-800 border-pink-300"
+    },
+    {
+        id: 5,
         status: "COMPLETED",
         name: "Graduated",
         color: "bg-green-100 text-green-800 border-green-300"

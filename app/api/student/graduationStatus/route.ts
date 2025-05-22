@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, GraduationStatusEnum } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -38,5 +38,55 @@ export async function GET(
     // Return a 'status' field in the error response for consistency,
     // as UserCard.tsx expects `data.status`.
     return NextResponse.json({ status: "Error: Failed to retrieve status", message: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// POST METHOD that updates the graduation status of multiple students
+// This function needs list of student numbers and the new status as string
+// Example: { studentNumbers: [123456, 123457], newStatus: 'ADVISOR_APPROVAL' }
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { studentNumbers, newStatus } = body;
+
+    // Validate studentNumbers: should be an array of numbers
+    if (!Array.isArray(studentNumbers) || studentNumbers.some(id => typeof id !== 'number') || studentNumbers.length === 0) {
+      return NextResponse.json({ error: 'Invalid or empty studentNumbers provided. Expected a non-empty array of numbers.' }, { status: 400 });
+    }
+
+    // Validate newStatus: should be a string and a valid GraduationStatusEnum value
+    if (!newStatus || typeof newStatus !== 'string') {
+      return NextResponse.json({ error: 'Missing or invalid newStatus provided. Expected a string.' }, { status: 400 });
+    }
+
+    const validStatuses = Object.values(GraduationStatusEnum);
+    if (!validStatuses.includes(newStatus as GraduationStatusEnum)) {
+      return NextResponse.json({ error: `Invalid new status value. Must be one of: ${validStatuses.join(', ')}` }, { status: 400 });
+    }
+
+    // Perform the batch update
+    // This updates GraduationStatus records where the related Student's studentId (student number) is in the studentNumbers list.
+    const updateResult = await prisma.graduationStatus.updateMany({
+      where: {
+        Student: {
+          studentId: {
+            in: studentNumbers,
+          },
+        },
+      },
+      data: {
+        status: newStatus as GraduationStatusEnum,
+      },
+    });
+
+    return NextResponse.json({ message: 'Graduation statuses updated successfully.', count: updateResult.count }, { status: 200 });
+
+  } catch (error) {
+    console.error('Error updating graduation statuses:', error);
+    if (error instanceof SyntaxError) { // Handle JSON parsing errors
+        return NextResponse.json({ error: 'Invalid JSON payload' }, { status: 400 });
+    }
+    // Generic error for other issues
+    return NextResponse.json({ error: 'Failed to update graduation statuses', details: (error as Error).message }, { status: 500 });
   }
 }
