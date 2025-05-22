@@ -3,20 +3,20 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Get the students that are related to the Advisor, Department Secretariat, Faculty Secretariat
+// Get the students that are awaiting approval
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('userId');
   const role = searchParams.get('role');
-  
+  // 1. Get all advisor data
   if (!id || !role) {
     return NextResponse.json({ message: 'Students not found' }, { status: 404 });
   }
 
   if (role === 'advisor') {
     const students = await prisma.student.findMany({
-      where: { advisorId: parseInt(id) },
+      where: { advisorId: parseInt(id), GraduationStatus: { status: 'SYSTEM_APPROVAL' } },
       include: {
         Department: true,
         Advisor: true,
@@ -25,8 +25,9 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json(students, { status: 200 });
   } else if (role === 'department secretariat') {
+    // 2. Get all department data
     const students = await prisma.student.findMany({
-      where: { departmentId: parseInt(id) },
+      where: { departmentId: parseInt(id), GraduationStatus: { status: 'ADVISOR_APPROVAL' } },
       include: {
         Department: true,
         Advisor: true,
@@ -35,6 +36,7 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json(students, { status: 200 });
   }else if (role === 'faculty') {
+    // 3. Get all faculty data
     const departments = await prisma.department.findMany({
       where: { facultyId: parseInt(id) },
       select: { id: true },

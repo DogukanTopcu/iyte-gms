@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import React from 'react'
 
-const StudentSidebar = ({ activePage }: { activePage: string }) => {
+const FacultySecretariatSidebar = ({ activePage }: { activePage: string }) => {
   return (
     <nav className="flex-1 px-4 py-6">
     <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-red-300 pl-2">
@@ -27,4 +27,4 @@ const StudentSidebar = ({ activePage }: { activePage: string }) => {
   )
 }
 
-export default StudentSidebar
+export default FacultySecretariatSidebar

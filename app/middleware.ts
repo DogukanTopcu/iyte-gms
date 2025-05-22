@@ -69,7 +69,7 @@ export function middleware(request: NextRequest) {
             // Redirect to home page if user doesn't have required role
             return NextResponse.redirect(new URL('/login', cleanUrl))
           }
-          return NextResponse.redirect(new URL('/sa/init-system', cleanUrl))
+          return NextResponse.redirect(new URL('/student-affairs/system-management', cleanUrl))
         }
       }
 

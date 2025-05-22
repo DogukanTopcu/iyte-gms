@@ -26,7 +26,7 @@ interface Student {
   };
 }
 
-const StudentListTable = ({ userId, role }: { userId: number, role: string }) => {
+const StudentListTable = ({ userId, role, newStatus }: { userId: number, role: string, newStatus: string }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [students, setStudents] = useState<Student[]>([]);
     const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
@@ -41,14 +41,13 @@ const StudentListTable = ({ userId, role }: { userId: number, role: string }) =>
         setUpdateError(null);
         setUpdateSuccess(null);
         try {
-            const response = await fetch(`/api/student/getRelatedStudents?userId=${userId}&role=${role}`);
+            const response = await fetch(`/api/student/getApprovalStudents?userId=${userId}&role=${role}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch students');
             }
             const data = await response.json();
             // Correctly filter students and update state
-            const filteredData = data.filter((student: Student) => student.GraduationStatus?.status === 'SYSTEM_APPROVAL');
-            setStudents(filteredData);
+            setStudents(data);
         } catch (error) {
             setUpdateError(error instanceof Error ? error.message : "An unknown error occurred while fetching students.");
             setStudents([]); // Clear students on error
@@ -93,7 +92,7 @@ const StudentListTable = ({ userId, role }: { userId: number, role: string }) =>
                 },
                 body: JSON.stringify({
                     studentNumbers: selectedStudentIds,
-                    newStatus: "ADVISOR_APPROVAL",
+                    newStatus: newStatus,
                 }),
             });
             const result = await response.json();

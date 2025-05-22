@@ -4,6 +4,8 @@ import { useAuth, UserRole } from '@/app/context/AuthContext';
 import StudentSidebar from './sidebar_items/StudentSidebar';
 import AdvisorSidebar from './sidebar_items/AdvisorSidebar';
 import StudentAffairsSidebar from './sidebar_items/StudentAffairsSidebar';
+import DeptSecretariatSidebar from './sidebar_items/DeptSecretariatSidebar';
+import FacultySecretariatSidebar from './sidebar_items/FacultySecretariatSidebar';
 
 interface SidebarProps {
   activePage?: string;
@@ -66,7 +68,9 @@ export default function Sidebar({ activePage = 'home', userRole, onSidebarToggle
           userRole === 'student' ? <StudentSidebar activePage={activePage} /> : 
           userRole?.toLowerCase() === 'secretariat' ? <StudentSidebar activePage={activePage} /> :
           userRole?.toLowerCase() === 'student affairs' ? <StudentAffairsSidebar activePage={activePage} /> :
-          userRole?.toLowerCase() === 'advisor' ? <AdvisorSidebar activePage={activePage} /> : null
+          userRole?.toLowerCase() === 'advisor' ? <AdvisorSidebar activePage={activePage} /> : 
+          userRole?.toLowerCase() === 'department secretariat' ? <DeptSecretariatSidebar activePage={activePage} /> :
+          userRole?.toLowerCase() === 'faculty secretariat' ? <FacultySecretariatSidebar activePage={activePage} /> : null
         }
 
         {/* Logout section - separated as requested */}

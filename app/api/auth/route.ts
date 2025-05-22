@@ -40,14 +40,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ user: admin, role: "student affairs" }, { status: 200 });
     }
 
-    const deptSecretariat = await authenticateUser(process.env.NEXT_PUBLIC_API_URL + '/api/ubys/secretariats', email, password);
+    const deptSecretariat = await authenticateUser(process.env.NEXT_PUBLIC_API_URL + '/api/ubys/secretariats/department', email, password);
     if (deptSecretariat) {
-      return NextResponse.json({ user: deptSecretariat, role: 'secretariat' }, { status: 200 });
+      return NextResponse.json({ user: deptSecretariat, role: 'department secretariat' }, { status: 200 });
     }
 
-    const facSecretariat = await authenticateUser(process.env.NEXT_PUBLIC_API_URL + '/api/ubys/secretariats', email, password);
+    const facSecretariat = await authenticateUser(process.env.NEXT_PUBLIC_API_URL + '/api/ubys/secretariats/faculty', email, password);
     if (facSecretariat) {
-      return NextResponse.json({ user: facSecretariat, role: facSecretariat.name }, { status: 200 });
+      return NextResponse.json({ user: facSecretariat, role: 'faculty secretariat' }, { status: 200 });
     }
 
     return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
@@ -95,7 +95,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    if (role === 'secretariat') {
+    if (role === 'department secretariat') {
       // Check in departmentSecretariats array
       const deptMatch = departmentSecretariats.find(secretariat => secretariat.email === email);
       if (deptMatch) {
@@ -103,18 +103,17 @@ export async function GET(req: NextRequest) {
           where: { email: email }
         });
         if (secretariat) {
-          return NextResponse.json({ user: secretariat, role: 'secretariat' }, { status: 200 });
+          return NextResponse.json({ user: secretariat, role: 'department secretariat' }, { status: 200 });
         }
       }
     }
 
-    const fSecretariat = facultySecretariats.filter(secretariat => secretariat.name.toLowerCase() === role)[0];
-    if (fSecretariat) {
-      const secretariat = await prisma.facSecretariat.findUnique({
+    if (role === 'faculty secretariat') {
+      const facSecretariat = await prisma.facSecretariat.findUnique({
         where: { email: email }
       });
-      if (secretariat) {
-        return NextResponse.json({ user: secretariat, role: secretariat.name }, { status: 200 });
+      if (facSecretariat) {
+        return NextResponse.json({ user: facSecretariat, role: 'faculty secretariat' }, { status: 200 });
       }
     }
 

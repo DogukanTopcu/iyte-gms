@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 
-export type UserRole = 'Physics Department Secretariat'|'secretariat' | 'faculity' | 'Student Affairs' | "advisor" | "student" | null;
+export type UserRole = 'faculty secretariat' | 'department secretariat' | 'faculity' | 'Student Affairs' | "advisor" | "student" | null;
 
 interface Department {
   id: number;
@@ -183,7 +183,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         'Content-Type': 'application/json',
       },
     });
-    console.log("role", role)
     return response.json();
   };
 

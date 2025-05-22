@@ -55,7 +55,7 @@ const AdvisorStudentListPage = () => {
         status.
       </p>
 
-      <AdvisorStudentList userId={userId} role={userRole} />
+      <AdvisorStudentList userId={userId} role={userRole} newStatus="ADVISOR_APPROVAL" />
     </div>
   );
 };
