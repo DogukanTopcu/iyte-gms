@@ -13,7 +13,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, userRole } = useAuth();
-  
+
   useEffect(() => {
     // Once user data is available or confirmed null, set loading to false
     if (user !== undefined) {
@@ -56,6 +56,8 @@ export default function Dashboard() {
                 name={user?.name || 'N/A'}
                 email={user?.email || 'N/A'}
                 department={departments.find((dep: Department) => dep.id === user?.departmentId) || { id: 0, name: 'N/A' }} />
+              
+              <StudentListTable userId={user?.departmentId || 0} role = 'secretariat' />
             </>
           ) : null
         }
