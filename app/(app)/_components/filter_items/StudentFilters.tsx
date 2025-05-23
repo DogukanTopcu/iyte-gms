@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import FilterComponent, { FilterConfig } from './FilterComponent';
-import { departments } from '../../../api/ubys/_shared/faculty-and-department-data';
+import { departments, faculties } from '../../../api/ubys/_shared/faculty-and-department-data';
 import statusName from '@/app/constants/graduation-status';
+import { CascadingFilters } from './types';
 
 interface Advisor {
   id: number;
@@ -28,19 +29,24 @@ interface Department {
 }
 
 type StudentFiltersProps = {
-  onFilterChange: (filters: { department?: string; advisor?: string; status?: string }) => void;
-  initialFilters?: { department?: string; advisor?: string; status?: string };
+  onFilterChange: (filters: { faculty?: string; department?: string; advisor?: string; status?: string }) => void;
+  initialFilters?: { faculty?: string; department?: string; advisor?: string; status?: string };
   userId: number;
   role: string;
+  cascadingFilters?: CascadingFilters;
+  showFacultyFilter?: boolean;
 };
 
 export default function StudentFilters({ 
   onFilterChange, 
   initialFilters = {},
   userId,
-  role 
+  role,
+  cascadingFilters,
+  showFacultyFilter = false
 }: StudentFiltersProps) {
   const [activeFilters, setActiveFilters] = useState<Record<string, string | null>>({
+    faculty: initialFilters.faculty || null,
     department: initialFilters.department || null,
     advisor: initialFilters.advisor || null,
     status: initialFilters.status || null,
@@ -48,6 +54,18 @@ export default function StudentFilters({
   const [advisors, setAdvisors] = useState<Advisor[]>([]);
   const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Update local state when cascading filters change
+  useEffect(() => {
+    if (cascadingFilters) {
+      setActiveFilters(prev => ({
+        ...prev,
+        faculty: cascadingFilters.faculty,
+        department: cascadingFilters.department,
+        advisor: cascadingFilters.advisor,
+      }));
+    }
+  }, [cascadingFilters]);
 
   // Fetch advisors data
   useEffect(() => {
@@ -95,20 +113,54 @@ export default function StudentFilters({
     }
   }, [userId, role]);
 
-  // Create department options - use fetched departments for faculty secretariat, otherwise use all departments
-  const departmentOptions = (role === 'faculty secretariat' && fetchedDepartments.length > 0 
-    ? fetchedDepartments 
-    : departments
-  ).map(dept => ({
-    label: dept.name,
-    value: dept.id.toString(),
+  // Create faculty options
+  const facultyOptions = faculties.map(faculty => ({
+    label: faculty.name,
+    value: faculty.id.toString(),
   }));
 
-  // Create advisor options from fetched advisors (already filtered by faculty for faculty secretariat)
-  const advisorOptions = advisors.map(advisor => ({
-    label: advisor.name,
-    value: advisor.id.toString(),
-  }));
+  // Create department options - filter by faculty if selected
+  const getDepartmentOptions = () => {
+    let departmentData = role === 'faculty secretariat' && fetchedDepartments.length > 0 
+      ? fetchedDepartments 
+      : departments;
+
+    // Filter departments by selected faculty
+    if (cascadingFilters?.faculty) {
+      departmentData = departmentData.filter(dept => 
+        'facultyId' in dept ? dept.facultyId?.toString() === cascadingFilters.faculty : false
+      );
+    }
+
+    return departmentData.map(dept => ({
+      label: dept.name,
+      value: dept.id.toString(),
+    }));
+  };
+
+  // Create advisor options from fetched advisors, filter by faculty and department if selected
+  const getAdvisorOptions = () => {
+    let filteredAdvisors = [...advisors];
+    
+    // Filter advisors by selected faculty (if no specific department is selected)
+    if (cascadingFilters?.faculty && !cascadingFilters?.department) {
+      filteredAdvisors = filteredAdvisors.filter(advisor => 
+        advisor.Department?.Faculty?.id.toString() === cascadingFilters.faculty
+      );
+    }
+    
+    // Filter advisors by selected department (this takes priority over faculty)
+    if (cascadingFilters?.department) {
+      filteredAdvisors = filteredAdvisors.filter(advisor => 
+        advisor.Department?.id.toString() === cascadingFilters.department
+      );
+    }
+    
+    return filteredAdvisors.map(advisor => ({
+      label: advisor.name,
+      value: advisor.id.toString(),
+    }));
+  };
 
   // Status options from graduation-status.ts
   const statusOptions = statusName.map(status => ({
@@ -117,15 +169,21 @@ export default function StudentFilters({
   }));
 
   const filters: FilterConfig[] = [
+    // Only include faculty filter if showFacultyFilter is true
+    ...(showFacultyFilter ? [{
+      id: 'faculty',
+      label: 'Faculty',
+      options: facultyOptions,
+    }] : []),
     {
       id: 'department',
       label: 'Department',
-      options: departmentOptions,
+      options: getDepartmentOptions(),
     },
     {
       id: 'advisor',
       label: 'Advisor',
-      options: advisorOptions,
+      options: getAdvisorOptions(),
     },
     {
       id: 'status',
@@ -139,6 +197,7 @@ export default function StudentFilters({
     setActiveFilters(newFilters);
     
     onFilterChange({
+      faculty: newFilters.faculty || undefined,
       department: newFilters.department || undefined,
       advisor: newFilters.advisor || undefined,
       status: newFilters.status || undefined,

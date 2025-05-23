@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import FilterComponent, { FilterConfig } from './FilterComponent';
 import { departments, faculties } from '../../../api/ubys/_shared/faculty-and-department-data';
+import { CascadingFilters } from './types';
 
 interface Department {
   id: number;
@@ -19,6 +20,7 @@ type AdvisorFiltersProps = {
   hideFacultyFilter?: boolean;
   userId?: number;
   role?: string;
+  cascadingFilters?: CascadingFilters;
 };
 
 export default function AdvisorFilters({ 
@@ -26,7 +28,8 @@ export default function AdvisorFilters({
   initialFilters = {},
   hideFacultyFilter = false,
   userId,
-  role
+  role,
+  cascadingFilters
 }: AdvisorFiltersProps) {
   const [activeFilters, setActiveFilters] = useState<Record<string, string | null>>({
     department: initialFilters.department || null,
@@ -34,6 +37,17 @@ export default function AdvisorFilters({
   });
   const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Update local state when cascading filters change
+  useEffect(() => {
+    if (cascadingFilters) {
+      setActiveFilters(prev => ({
+        ...prev,
+        faculty: cascadingFilters.faculty,
+        department: cascadingFilters.department,
+      }));
+    }
+  }, [cascadingFilters]);
 
   // Fetch departments based on userId and role when hideFacultyFilter is true (faculty secretariat)
   useEffect(() => {
@@ -63,14 +77,24 @@ export default function AdvisorFilters({
     }
   }, [hideFacultyFilter, userId, role]);
 
-  // Create department options - use fetched departments for faculty secretariat, otherwise use all departments
-  const departmentOptions = (hideFacultyFilter && fetchedDepartments.length > 0 
-    ? fetchedDepartments 
-    : departments
-  ).map(dept => ({
-    label: dept.name,
-    value: dept.id.toString(),
-  }));
+  // Create department options - filter by faculty if selected
+  const getDepartmentOptions = () => {
+    let departmentData = hideFacultyFilter && fetchedDepartments.length > 0 
+      ? fetchedDepartments 
+      : departments;
+
+    // Filter departments by selected faculty
+    if (cascadingFilters?.faculty) {
+      departmentData = departmentData.filter(dept => 
+        'facultyId' in dept ? dept.facultyId?.toString() === cascadingFilters.faculty : false
+      );
+    }
+
+    return departmentData.map(dept => ({
+      label: dept.name,
+      value: dept.id.toString(),
+    }));
+  };
 
   // Create faculty options
   const facultyOptions = faculties.map(faculty => ({
@@ -88,7 +112,7 @@ export default function AdvisorFilters({
     {
       id: 'department',
       label: 'Department',
-      options: departmentOptions,
+      options: getDepartmentOptions(),
     },
   ];
 

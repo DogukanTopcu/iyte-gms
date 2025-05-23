@@ -1,21 +1,34 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import FilterComponent, { FilterConfig } from './FilterComponent';
 import { faculties } from '../../../api/ubys/_shared/faculty-and-department-data';
+import { CascadingFilters } from './types';
 
 type DepartmentFiltersProps = {
   onFilterChange: (filters: { faculty?: string }) => void;
   initialFilters?: { faculty?: string };
+  cascadingFilters?: CascadingFilters;
 };
 
 export default function DepartmentFilters({ 
   onFilterChange, 
-  initialFilters = {} 
+  initialFilters = {},
+  cascadingFilters 
 }: DepartmentFiltersProps) {
   const [activeFilters, setActiveFilters] = useState<Record<string, string | null>>({
     faculty: initialFilters.faculty || null,
   });
+
+  // Update local state when cascading filters change
+  useEffect(() => {
+    if (cascadingFilters) {
+      setActiveFilters(prev => ({
+        ...prev,
+        faculty: cascadingFilters.faculty,
+      }));
+    }
+  }, [cascadingFilters]);
 
   // Create faculty options
   const facultyOptions = faculties.map(faculty => ({

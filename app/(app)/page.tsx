@@ -18,36 +18,8 @@ import StudentAffairsInfoCard from './_components/StudentAffairsInfoCard';
 import AdminTableToggleSwitch from './_components/AdminTableToggleSwitch';
 import FacultySecretariatsListTable from './_components/FacultySecretariatsListTable';
 import { StudentFilters, AdvisorFilters, DepartmentFilters, FacultyFilters } from './_components/filter_items';
-import { Box } from '@mui/material';
 
-// Define types for the tables
-interface DepartmentSecretariat {
-  id: number;
-  name: string;
-  email: string;
-  departmentId: number;
-  departmentName: string;
-}
 
-interface Advisor {
-  id: number;
-  name: string;
-  email: string;
-  departmentId: number;
-  departmentName: string;
-}
-
-interface Student {
-  id: number;
-  studentId: string;
-  name: string;
-  email: string;
-  departmentId: number;
-  departmentName: string;
-  advisorId: number;
-  advisorName: string;
-  status: string;
-}
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -66,6 +38,54 @@ export default function Dashboard() {
   const [advisorFilters, setAdvisorFilters] = useState({});
   const [departmentFilters, setDepartmentFilters] = useState({});
   const [facultyFilters, setFacultyFilters] = useState({});
+
+  // Cascading filter state management
+  const [cascadingFilters, setCascadingFilters] = useState({
+    faculty: null as string | null,
+    department: null as string | null,
+    advisor: null as string | null,
+  });
+
+  // Handle cascading filter changes
+  const handleCascadingFilterChange = (filterType: 'faculty' | 'department' | 'advisor', value: string | null) => {
+    setCascadingFilters(prev => {
+      const newFilters = { ...prev };
+      
+      if (filterType === 'faculty') {
+        newFilters.faculty = value;
+        // Clear dependent filters when faculty changes
+        newFilters.department = null;
+        newFilters.advisor = null;
+      } else if (filterType === 'department') {
+        newFilters.department = value;
+        // Clear dependent filters when department changes
+        newFilters.advisor = null;
+      } else if (filterType === 'advisor') {
+        newFilters.advisor = value;
+      }
+      
+      return newFilters;
+    });
+  };
+
+  // Convert cascading filters to specific filter formats
+  const getStudentFiltersFromCascading = () => ({
+    faculty: cascadingFilters.faculty || undefined,
+    department: cascadingFilters.department || undefined,
+    advisor: cascadingFilters.advisor || undefined,
+    ...studentFilters
+  });
+
+  const getAdvisorFiltersFromCascading = () => ({
+    faculty: cascadingFilters.faculty || undefined,
+    department: cascadingFilters.department || undefined,
+    ...advisorFilters
+  });
+
+  const getDepartmentFiltersFromCascading = () => ({
+    faculty: cascadingFilters.faculty || undefined,
+    ...departmentFilters
+  });
 
   const handleToggleView = (showStudents: boolean) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -221,26 +241,46 @@ export default function Dashboard() {
                 
                 {currentView === 'departments' && (
                   <>
-                    <DepartmentFilters onFilterChange={setDepartmentFilters} />
-                    <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="student affairs" filters={departmentFilters} />
+                    <DepartmentFilters 
+                      onFilterChange={(filters) => {
+                        setDepartmentFilters(filters);
+                        handleCascadingFilterChange('faculty', filters.faculty || null);
+                      }}
+                      cascadingFilters={cascadingFilters}
+                    />
+                    <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="student affairs" filters={getDepartmentFiltersFromCascading()} />
                   </>
                 )}
                 
                 {currentView === 'advisors' && (
                   <>
-                    <AdvisorFilters onFilterChange={setAdvisorFilters} />
-                    <AdvisorListTable userId={user?.facultyId || 0} role="student affairs" filters={advisorFilters} />
+                    <AdvisorFilters 
+                      onFilterChange={(filters) => {
+                        setAdvisorFilters(filters);
+                        handleCascadingFilterChange('faculty', filters.faculty || null);
+                        handleCascadingFilterChange('department', filters.department || null);
+                      }}
+                      cascadingFilters={cascadingFilters}
+                    />
+                    <AdvisorListTable userId={user?.facultyId || 0} role="student affairs" filters={getAdvisorFiltersFromCascading()} />
                   </>
                 )}
                 
                 {currentView === 'students' && (
                   <>
                     <StudentFilters 
-                      onFilterChange={setStudentFilters} 
+                      onFilterChange={(filters) => {
+                        setStudentFilters(filters);
+                        handleCascadingFilterChange('faculty', filters.faculty || null);
+                        handleCascadingFilterChange('department', filters.department || null);
+                        handleCascadingFilterChange('advisor', filters.advisor || null);
+                      }}
                       userId={user?.id || 0}
                       role="student affairs"
+                      cascadingFilters={cascadingFilters}
+                      showFacultyFilter={true}
                     />
-                    <StudentListTable userId={user?.id || 0} role="student affairs" filters={studentFilters} />
+                    <StudentListTable userId={user?.id || 0} role="student affairs" filters={getStudentFiltersFromCascading()} />
                   </>
                 )}
               </div>
