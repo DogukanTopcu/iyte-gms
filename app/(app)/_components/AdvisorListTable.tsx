@@ -7,7 +7,6 @@ import { TableContainer } from '@mui/material'
 import { CircularProgress, Typography } from '@mui/material'
 import { Box } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import statusName from '@/app/constants/graduation-status'
 import { useRouter, useSearchParams } from 'next/navigation'
 import StudentListTable from './StudentListTable'
 
@@ -71,7 +70,7 @@ const AdvisorListTable = ({ userId, role }: { userId: number, role: string }) =>
       {selectedAdvisor ? (
         // Show StudentListTable for selected advisor
         <div>
-                     <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-4 mb-4">
              <button 
                onClick={handleBackToAdvisors}
                className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"

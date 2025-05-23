@@ -46,6 +46,18 @@ export async function GET(req: NextRequest) {
     });
     return NextResponse.json(advisors, { status: 200 });
   }
+  else if (role === 'student affairs') {
+    const advisors = await prisma.advisor.findMany({
+      include: {
+        Department: {
+            include: {
+                Faculty: true,
+            }
+        }
+      },
+    });
+    return NextResponse.json(advisors, { status: 200 });
+  }
 
   return NextResponse.json({ message: 'Invalid request' }, { status: 400 });
 }

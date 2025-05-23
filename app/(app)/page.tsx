@@ -15,6 +15,9 @@ import FacultySecretariatInfoCard from './_components/FacultySecretariatInfoCard
 import { Faculty } from '@prisma/client';
 import FacultyTableToggleSwitch from './_components/FacultyTableToggleSwitch';
 import DepartmentSecretariatsListTable from './_components/DepartmentSecretariatsListTable';
+import StudentAffairsInfoCard from './_components/StudentAffairsInfoCard';
+import AdminTableToggleSwitch from './_components/AdminTableToggleSwitch';
+import FacultySecretariatsListTable from './_components/FacultySecretariatsListTable';
 
 // Define types for the tables
 interface DepartmentSecretariat {
@@ -68,6 +71,7 @@ export default function Dashboard() {
   useEffect(() => {
     // Once user data is available or confirmed null, set loading to false
     if (user !== undefined) {
+      setError(null);
       setIsLoading(false);
     }
   }, [user]);
@@ -149,6 +153,42 @@ export default function Dashboard() {
                 
                 {currentView === 'students' && (
                   <StudentListTable userId={user?.facultyId || 0} role="faculty secretariat" />
+                )}
+              </div>
+            </>
+          )
+          : userRole === 'student affairs' ? (
+            <>
+              {isLoading && <p>Loading secretariat data...</p>}
+              {error && <p className="text-red-600">Error: {error}</p>}
+              <StudentAffairsInfoCard
+                name={user?.name || 'N/A'}
+                email={user?.email || 'N/A'}
+              />
+              <div className="mt-6">
+                <AdminTableToggleSwitch 
+                  onToggle={(view) => {
+                    const params = new URLSearchParams(searchParams);
+                    params.set('view', view);
+                    router.push(`?${params.toString()}`);
+                  }}
+                  initialView={currentView as 'departments' | 'advisors' | 'students'}
+                />
+
+                {currentView === 'faculties' && (
+                  <FacultySecretariatsListTable userId={user?.id || 0} role="student affairs" />
+                )}
+                
+                {currentView === 'departments' && (
+                  <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="student affairs" />
+                )}
+                
+                {currentView === 'advisors' && (
+                  <AdvisorListTable userId={user?.facultyId || 0} role="student affairs" />
+                )}
+                
+                {currentView === 'students' && (
+                  <StudentListTable userId={user?.id || 0} role="student affairs" />
                 )}
               </div>
             </>

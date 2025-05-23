@@ -83,7 +83,7 @@ const DepartmentSecretariatsListTable = ({ userId, role }: { userId: number, rol
               Back to Department Secretariats
             </button>
             <div>
-              <h3 className="text-lg font-semibold text-gray-800">Students of {selectedDepartmentSecretariat.name}</h3>
+              <h3 className="text-lg font-semibold text-gray-800">Advisors of {selectedDepartmentSecretariat.name}</h3>
               <p className="text-sm text-gray-600">{selectedDepartmentSecretariat.email} • {selectedDepartmentSecretariat.Department.name}</p>
             </div>
           </div>
@@ -98,7 +98,7 @@ const DepartmentSecretariatsListTable = ({ userId, role }: { userId: number, rol
             </Box>
           ) : (
             <>
-              <Typography variant="h6" sx={{ mb: 2 }}>Advisors</Typography>
+              <Typography variant="h6" sx={{ mb: 2 }}>Department Secretariats</Typography>
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>

@@ -13,13 +13,23 @@ import {
   Alert
 } from "@mui/material";
 
+interface DeptSecretariat {
+  id: number;
+  name: string;
+  email: string;
+  Department: {
+    id: number;
+    name: string;
+  };
+}
+
 const DeptSecretariatStudentListPage = () => {
   const { user, userRole } = useAuth();
   
   const authLoading = !user; // Fallback: treat as loading if user is not yet available
 
   // State for advisors data
-  const [deptSecretariats, setDeptSecretariats] = useState<any[]>([]);
+  const [deptSecretariats, setDeptSecretariats] = useState<DeptSecretariat[]>([]);
   const [deptSecretariatsLoading, setDeptSecretariatsLoading] = useState(true);
   const [deptSecretariatsError, setDeptSecretariatsError] = useState<string | null>(null);
 
@@ -117,7 +127,7 @@ const DeptSecretariatStudentListPage = () => {
 
         {!deptSecretariatsLoading && !deptSecretariatsError && deptSecretariats.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            {deptSecretariats.map((deptSecretariat: any, index: number) => (
+            {deptSecretariats.map((deptSecretariat: DeptSecretariat, index: number) => (
               <Card 
                 key={deptSecretariat.id || index}
                 sx={{ 
@@ -133,7 +143,7 @@ const DeptSecretariatStudentListPage = () => {
               >
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="h6" component="h3" gutterBottom>
-                    {deptSecretariat.name || (deptSecretariat.firstName && deptSecretariat.lastName ? `${deptSecretariat.firstName} ${deptSecretariat.lastName}` : 'Unknown Advisor')}
+                    {deptSecretariat.name}
                   </Typography>
                   
                   <Typography variant="body2" color="text.secondary" gutterBottom>
@@ -152,13 +162,6 @@ const DeptSecretariatStudentListPage = () => {
                       color="warning" 
                       size="small"
                     />
-                    {deptSecretariat.status && (
-                      <Chip 
-                        label={deptSecretariat.status} 
-                        color="default" 
-                        size="small"
-                      />
-                    )}
                   </Box>
                 </CardContent>
               </Card>

@@ -13,51 +13,52 @@ import {
   Alert
 } from "@mui/material";
 
-interface Advisor {
+interface FacultySecretariat {
   id: number;
   name: string;
   email: string;
-  Department: {
+  Faculty: {
     id: number;
     name: string;
   };
 }
 
-const DeptSecretariatStudentListPage = () => {
-  const { user } = useAuth();
+const StudentListPage = () => {
+  const { user, userRole } = useAuth();
   
   const authLoading = !user; // Fallback: treat as loading if user is not yet available
 
   // State for advisors data
-  const [advisors, setAdvisors] = useState<Advisor[]>([]);
-  const [advisorsLoading, setAdvisorsLoading] = useState(true);
-  const [advisorsError, setAdvisorsError] = useState<string | null>(null);
+  const [facultySecretariats, setFacultySecretariats] = useState<FacultySecretariat[]>([]);
+  const [facultySecretariatsLoading, setFacultySecretariatsLoading] = useState(true);
+  const [facultySecretariatsError, setFacultySecretariatsError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAdvisors = async () => {
-      if (!user?.departmentId) return;
+      if (!user?.id) return;
       
       try {
-        setAdvisorsLoading(true);
-        setAdvisorsError(null);
-        const response = await fetch(`/api/advisor/getWaitingAdvisors?userId=${user.departmentId}`);
+        setFacultySecretariatsLoading(true);
+        setFacultySecretariatsError(null);
+        const response = await fetch(`/api/facultySecretariat/getWaitingSecretariats?userId=${user.id}`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch advisors: ${response.statusText}`);
         }
         
         const data = await response.json();
-        setAdvisors(data.advisors || data || []);
+
+        setFacultySecretariats(data || []);
       } catch (error) {
         console.error('Error fetching advisors:', error);
-        setAdvisorsError(error instanceof Error ? error.message : 'An unknown error occurred');
+        setFacultySecretariatsError(error instanceof Error ? error.message : 'An unknown error occurred');
       } finally {
-        setAdvisorsLoading(false);
+        setFacultySecretariatsLoading(false);
       }
     };
 
     fetchAdvisors();
-  }, [user?.departmentId]);
+  }, [user?.id]);
 
   if (authLoading) {
     return (
@@ -87,8 +88,6 @@ const DeptSecretariatStudentListPage = () => {
 
   // Assuming the role for this page is always 'department secretariat' or derived from the user object
   // and that AdvisorStudentList expects a numeric userId.
-  const userId = user.id;
-  const userRole = user.role || "department secretariat"; // Fallback or ensure user.role is always present
 
   return (
     <div className="p-6 max-w-7xl mx-auto bg-white rounded-xl shadow-md">
@@ -104,33 +103,33 @@ const DeptSecretariatStudentListPage = () => {
       {/* Advisors Pending Approval Section */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4 text-gray-800">
-          Advisors Pending Approval Process
+          Department Secretariats Pending Approval Process
         </h2>
         
-        {advisorsLoading && (
+        {facultySecretariatsLoading && (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
             <CircularProgress size={20} />
-            <Typography sx={{ ml: 2 }}>Loading advisors...</Typography>
+            <Typography sx={{ ml: 2 }}>Loading department secretariats...</Typography>
           </Box>
         )}
 
-        {advisorsError && (
+        {facultySecretariatsError && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            Error loading advisors: {advisorsError}
+            Error loading department secretariats: {facultySecretariatsError}
           </Alert>
         )}
 
-        {!advisorsLoading && !advisorsError && advisors.length === 0 && (
+        {!facultySecretariatsLoading && !facultySecretariatsError && facultySecretariats.length === 0 && (
           <Alert severity="info" sx={{ mb: 2 }}>
             No advisors are currently pending approval.
           </Alert>
         )}
 
-        {!advisorsLoading && !advisorsError && advisors.length > 0 && (
+        {!facultySecretariatsLoading && !facultySecretariatsError && facultySecretariats.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            {advisors.map((advisor: Advisor, index: number) => (
+            {facultySecretariats.map((facultySecretariat: FacultySecretariat, index: number) => (
               <Card 
-                key={advisor.id || index}
+                key={facultySecretariat.id || index}
                 sx={{ 
                   height: '100%',
                   display: 'flex',
@@ -144,16 +143,16 @@ const DeptSecretariatStudentListPage = () => {
               >
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="h6" component="h3" gutterBottom>
-                    {advisor.name}
+                    {facultySecretariat.name}
                   </Typography>
                   
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    <strong>Email:</strong> {advisor.email || 'N/A'}
+                    <strong>Email:</strong> {facultySecretariat.email || 'N/A'}
                   </Typography>
                   
-                  {advisor.Department && (
+                  {facultySecretariat.Faculty && (
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      <strong>Department:</strong> {advisor.Department.name}
+                      <strong>Faculty:</strong> {facultySecretariat.Faculty.name}
                     </Typography>
                   )}
                   
@@ -171,9 +170,9 @@ const DeptSecretariatStudentListPage = () => {
         )}
       </div>
 
-      <AdvisorStudentList userId={userId} role={userRole || "department secretariat"} newStatus="DEPARTMENT_SECRETARIAT_APPROVAL" />
+      <AdvisorStudentList userId={user.id} role={userRole || "student affairs"} newStatus="COMPLETED" />
     </div>
   );
 };
 
-export default DeptSecretariatStudentListPage;
+export default StudentListPage;

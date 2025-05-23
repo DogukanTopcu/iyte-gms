@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Faculty } from '@prisma/client';
 
-export type UserRole = 'faculty secretariat' | 'department secretariat' | 'faculity' | 'Student Affairs' | "advisor" | "student" | null;
+export type UserRole = 'faculty secretariat' | 'department secretariat' | 'faculity' | 'student affairs' | "advisor" | "student" | null;
 
 interface Department {
   id: number;

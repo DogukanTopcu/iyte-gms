@@ -51,10 +51,8 @@ export async function GET(req: NextRequest) {
       },
     });
     return NextResponse.json(students, { status: 200 });
-  }else if (role === 'studentAffairs') {
-    // 4. Get all university data
+  }else if (role === 'student affairs') {
     const students = await prisma.student.findMany({
-      where: { GraduationStatus: { status: 'FACULTY_SECRETARIAT_APPROVAL' } },
       include: {
         Department: true,
         Advisor: true,

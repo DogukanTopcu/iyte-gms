@@ -65,11 +65,11 @@ export async function POST() {
       }
     }, { status: 200 });
     
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     console.error('Error initializing system:', error);
     return NextResponse.json({ 
       error: 'Failed to initialize system', 
-      details: error.message || 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 } 

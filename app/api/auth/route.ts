@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { departmentSecretariats, facultySecretariats } from '../ubys/_shared';
+import { departmentSecretariats } from '../ubys/_shared';
 
 const prisma = new PrismaClient();
 

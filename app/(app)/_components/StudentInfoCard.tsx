@@ -143,7 +143,7 @@ export const UserCard = ({ user, isLoading, error }: UserCardProps) => {
               
               <div className="mt-4 grid grid-cols-5 gap-1 text-xs">
                 {statusName.map((item, index) => {
-                  const isCompleted = statusId > item.id;
+                  const isCompleted = statusId >= item.id;
                   const isCurrent = statusId === item.id;
                   
                   return (

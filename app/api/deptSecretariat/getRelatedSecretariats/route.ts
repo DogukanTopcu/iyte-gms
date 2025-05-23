@@ -33,14 +33,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(deptSecretariats, { status: 200 });
   }
   else if (role === 'student affairs') {
-    // 2. Get all faculty data
-    const departments = await prisma.department.findMany({
-      where: { facultyId: parseInt(id) },
-      select: { id: true },
-    });
-    const departmentIds = departments.map((department) => department.id);
     const deptSecretariats = await prisma.deptSecretariat.findMany({
-      where: { departmentId: { in: departmentIds } },
       include: {
         Department: {
             include: {
