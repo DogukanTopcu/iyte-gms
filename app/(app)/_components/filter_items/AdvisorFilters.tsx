@@ -117,7 +117,15 @@ export default function AdvisorFilters({
   ];
 
   const handleFilterChange = (filterId: string, value: string | null) => {
-    const newFilters = { ...activeFilters, [filterId]: value };
+    let newFilters = { ...activeFilters, [filterId]: value };
+    
+    // Implement cascading logic: clear child filters when parent changes
+    if (filterId === 'faculty') {
+      // When faculty changes, clear department
+      newFilters.department = null;
+    }
+    // When department changes, no need to clear anything (it's the leaf node in this component)
+    
     setActiveFilters(newFilters);
     
     onFilterChange({

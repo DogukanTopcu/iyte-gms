@@ -43,7 +43,7 @@ const StudentAffairsTopThreeStudentsPage = () => {
   return (
     <div className="p-6 max-w-7xl mx-auto bg-white rounded-xl shadow-md">
       <h1 className="text-2xl font-bold mb-6 text-red-700 border-b pb-2">
-        Top Three Students - University Wide
+        Top Three Students
       </h1>
       <p className="mb-4 text-gray-600">
         This page displays the top three performing students across the entire institute, 

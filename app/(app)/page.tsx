@@ -46,28 +46,6 @@ export default function Dashboard() {
     advisor: null as string | null,
   });
 
-  // Handle cascading filter changes
-  const handleCascadingFilterChange = (filterType: 'faculty' | 'department' | 'advisor', value: string | null) => {
-    setCascadingFilters(prev => {
-      const newFilters = { ...prev };
-      
-      if (filterType === 'faculty') {
-        newFilters.faculty = value;
-        // Clear dependent filters when faculty changes
-        newFilters.department = null;
-        newFilters.advisor = null;
-      } else if (filterType === 'department') {
-        newFilters.department = value;
-        // Clear dependent filters when department changes
-        newFilters.advisor = null;
-      } else if (filterType === 'advisor') {
-        newFilters.advisor = value;
-      }
-      
-      return newFilters;
-    });
-  };
-
   // Convert cascading filters to specific filter formats
   const getStudentFiltersFromCascading = () => ({
     faculty: cascadingFilters.faculty || undefined,
@@ -192,12 +170,18 @@ export default function Dashboard() {
                 {currentView === 'advisors' && (
                   <>
                     <AdvisorFilters 
-                      onFilterChange={setAdvisorFilters} 
-                      hideFacultyFilter={true} 
-                      userId={user?.facultyId || 0}
-                      role="faculty secretariat"
+                      onFilterChange={(filters) => {
+                        setAdvisorFilters(filters);
+                        // Update cascading filters for external sync
+                        setCascadingFilters(prev => ({
+                          ...prev,
+                          faculty: filters.faculty || null,
+                          department: filters.department || null,
+                        }));
+                      }}
+                      cascadingFilters={cascadingFilters}
                     />
-                    <AdvisorListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={advisorFilters} />
+                    <AdvisorListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={getAdvisorFiltersFromCascading()} />
                   </>
                 )}
                 
@@ -244,7 +228,11 @@ export default function Dashboard() {
                     <DepartmentFilters 
                       onFilterChange={(filters) => {
                         setDepartmentFilters(filters);
-                        handleCascadingFilterChange('faculty', filters.faculty || null);
+                        // Update cascading filters for external sync
+                        setCascadingFilters(prev => ({
+                          ...prev,
+                          faculty: filters.faculty || null,
+                        }));
                       }}
                       cascadingFilters={cascadingFilters}
                     />
@@ -257,8 +245,12 @@ export default function Dashboard() {
                     <AdvisorFilters 
                       onFilterChange={(filters) => {
                         setAdvisorFilters(filters);
-                        handleCascadingFilterChange('faculty', filters.faculty || null);
-                        handleCascadingFilterChange('department', filters.department || null);
+                        // Update cascading filters for external sync
+                        setCascadingFilters(prev => ({
+                          ...prev,
+                          faculty: filters.faculty || null,
+                          department: filters.department || null,
+                        }));
                       }}
                       cascadingFilters={cascadingFilters}
                     />
@@ -271,9 +263,12 @@ export default function Dashboard() {
                     <StudentFilters 
                       onFilterChange={(filters) => {
                         setStudentFilters(filters);
-                        handleCascadingFilterChange('faculty', filters.faculty || null);
-                        handleCascadingFilterChange('department', filters.department || null);
-                        handleCascadingFilterChange('advisor', filters.advisor || null);
+                        // Update cascading filters for external sync
+                        setCascadingFilters({
+                          faculty: filters.faculty || null,
+                          department: filters.department || null,
+                          advisor: filters.advisor || null,
+                        });
                       }}
                       userId={user?.id || 0}
                       role="student affairs"

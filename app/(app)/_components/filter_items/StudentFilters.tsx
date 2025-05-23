@@ -193,7 +193,19 @@ export default function StudentFilters({
   ];
 
   const handleFilterChange = (filterId: string, value: string | null) => {
-    const newFilters = { ...activeFilters, [filterId]: value };
+    let newFilters = { ...activeFilters, [filterId]: value };
+    
+    // Implement cascading logic: clear child filters when parent changes
+    if (filterId === 'faculty') {
+      // When faculty changes, clear department and advisor
+      newFilters.department = null;
+      newFilters.advisor = null;
+    } else if (filterId === 'department') {
+      // When department changes, clear advisor
+      newFilters.advisor = null;
+    }
+    // When advisor changes, no need to clear anything (it's the leaf node)
+    
     setActiveFilters(newFilters);
     
     onFilterChange({
