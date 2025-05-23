@@ -19,7 +19,7 @@ interface StudentWithGpaAndTerm extends StudentWithPrismaDetails {
 }
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = req.nextUrl;
   const idParam = searchParams.get('userId');
   const role = searchParams.get('role');
 

@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = req.nextUrl;
     const email = searchParams.get('email');
     const role = searchParams.get('role')?.toLowerCase();
 

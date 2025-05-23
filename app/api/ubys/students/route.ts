@@ -6,7 +6,7 @@ import { advisors } from '../_shared/advisors-data';
 // Handler function to process requests
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = req.nextUrl;
     const id = searchParams.get('id') ? parseInt(searchParams.get('id') as string, 10) : undefined;
     const advisorId = searchParams.get('advisorId') ? parseInt(searchParams.get('advisorId') as string, 10) : undefined;
     const departmentId = searchParams.get('departmentId') ? parseInt(searchParams.get('departmentId') as string, 10) : undefined;

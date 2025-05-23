@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 // Handler function to process requests
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = req.nextUrl;
   const id = searchParams.get('userId');
 
 
