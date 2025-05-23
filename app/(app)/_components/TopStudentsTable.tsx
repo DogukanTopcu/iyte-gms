@@ -9,6 +9,13 @@ import { Box } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import statusName from '@/app/constants/graduation-status'
 import { useRouter } from 'next/navigation'
+import { faculties, departments } from '../../api/ubys/_shared/faculty-and-department-data'
+
+interface Faculty {
+  id: number;
+  name: string;
+  email: string;
+}
 
 interface Student {
   id: number;
@@ -18,6 +25,10 @@ interface Student {
   Department: {
     id: number;
     name: string;
+    Faculty?: {
+      id: number;
+      name: string;
+    };
   };
   Advisor: {
     id: number;
@@ -31,11 +42,19 @@ interface Student {
 const TopStudentsTable = ({ 
   departmentId,
   isFacultyLevel = false,
-  isUniversityWide = false
+  isUniversityWide = false,
+  showSelectedFaculty = false,
+  showSelectedDepartment = false,
+  selectedFacultyName,
+  selectedDepartmentName
 }: { 
   departmentId?: number;
   isFacultyLevel?: boolean;
   isUniversityWide?: boolean;
+  showSelectedFaculty?: boolean;
+  showSelectedDepartment?: boolean;
+  selectedFacultyName?: string;
+  selectedDepartmentName?: string;
 }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [students, setStudents] = useState<Student[]>([]);
@@ -48,12 +67,17 @@ const TopStudentsTable = ({
             try {
                 let url;
                 if (isUniversityWide) {
-                    // For university-wide, no specific ID parameter needed
-                    url = '/api/student/getTopThree';
+                    url = '/api/student/getTopThree?role=student affairs';
+                } else if (showSelectedFaculty && departmentId) {
+                    url = `/api/student/getTopThree?role=faculty secretariat&userId=${departmentId}`;
+                } else if (showSelectedDepartment && departmentId) {
+                    url = `/api/student/getTopThree?role=department secretariat&userId=${departmentId}`;
+                } else if (isFacultyLevel && departmentId) {
+                    url = `/api/student/getTopThree?role=faculty secretariat&userId=${departmentId}`;
+                } else if (departmentId) {
+                    url = `/api/student/getTopThree?role=department secretariat&userId=${departmentId}`;
                 } else {
-                    // Use different parameter name based on level
-                    const paramName = isFacultyLevel ? 'facultyId' : 'userId';
-                    url = `/api/student/getTopThree?${paramName}=${departmentId}`;
+                    url = '/api/student/getTopThree?role=student affairs';
                 }
                 
                 const response = await fetch(url);
@@ -67,14 +91,48 @@ const TopStudentsTable = ({
             }
         };
         fetchTopStudents();
-    }, [departmentId, isFacultyLevel, isUniversityWide]);
+    }, [departmentId, isFacultyLevel, isUniversityWide, showSelectedFaculty, showSelectedDepartment]);
     
     const getTableTitle = () => {
         if (isUniversityWide) return 'Top Three Students (University-Wide)';
+        if (showSelectedFaculty && selectedFacultyName) return `Top Three Students - ${selectedFacultyName}`;
+        if (showSelectedDepartment && selectedDepartmentName) return `Top Three Students - ${selectedDepartmentName}`;
         if (isFacultyLevel) return 'Top Three Students (Faculty Level)';
         return 'Top Three Students (Department Level)';
     };
-    
+
+    const renderStudentRow = (student: Student, index: number, rankOffset: number = 0) => (
+        <TableRow key={`${student.id}-${rankOffset}`}>
+            <TableCell>
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    (index + rankOffset) === 0 ? 'bg-yellow-100 text-yellow-800' :
+                    (index + rankOffset) === 1 ? 'bg-gray-100 text-gray-800' :
+                    'bg-orange-100 text-orange-800'
+                }`}>
+                    #{index + rankOffset + 1}
+                </div>
+            </TableCell>
+            <TableCell>{student.studentId}</TableCell>
+            <TableCell>{student.name}</TableCell>
+            <TableCell>{student.email}</TableCell>
+            <TableCell>{student.Department.name}</TableCell>
+            <TableCell>{student.Advisor.name}</TableCell>
+            <TableCell>
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusName.find((status) => status.status === student.GraduationStatus.status)?.color}`}>
+                    {statusName.find((status) => status.status === student.GraduationStatus.status)?.name}
+                </div>
+            </TableCell>
+            <TableCell>
+                <button 
+                    onClick={() => router.push(`/transcript/${student.studentId}`)} 
+                    className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+                >
+                    Transcript
+                </button>
+            </TableCell>
+        </TableRow>
+    );
+
     return (
         <Box sx={{ mt: 4 }}>
             {isLoading ? (
@@ -102,37 +160,7 @@ const TopStudentsTable = ({
                             </TableHead>
                             <TableBody>
                                 {students.length > 0 ? (
-                                    students.map((student, index) => (
-                                        <TableRow key={student.id}>
-                                            <TableCell>
-                                                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                                    index === 0 ? 'bg-yellow-100 text-yellow-800' :
-                                                    index === 1 ? 'bg-gray-100 text-gray-800' :
-                                                    'bg-orange-100 text-orange-800'
-                                                }`}>
-                                                    #{index + 1}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>{student.studentId}</TableCell>
-                                            <TableCell>{student.name}</TableCell>
-                                            <TableCell>{student.email}</TableCell>
-                                            <TableCell>{student.Department.name}</TableCell>
-                                            <TableCell>{student.Advisor.name}</TableCell>
-                                            <TableCell>
-                                                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusName.find((status) => status.status === student.GraduationStatus.status)?.color}`}>
-                                                    {statusName.find((status) => status.status === student.GraduationStatus.status)?.name}
-                                                </div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <button 
-                                                    onClick={() => router.push(`/transcript/${student.studentId}`)} 
-                                                    className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
-                                                >
-                                                    Transcript
-                                                </button>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
+                                    students.map((student, index) => renderStudentRow(student, index))
                                 ) : (
                                     <TableRow>
                                         <TableCell colSpan={8} align="center">No students available</TableCell>
