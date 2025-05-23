@@ -90,7 +90,7 @@ const StudentListTable = ({
       } else {
         setFilteredStudents([]);
       }
-    }, [students, filters]);
+    }, [students]);
     
   return (
     <Box sx={{ mt: 4 }}>
