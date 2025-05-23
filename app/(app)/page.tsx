@@ -12,7 +12,6 @@ import AdvisorListTable from './_components/AdvisorListTable';
 import TableToggleSwitch from './_components/TableToggleSwitch';
 import { useSearchParams, useRouter } from 'next/navigation';
 import FacultySecretariatInfoCard from './_components/FacultySecretariatInfoCard';
-import { Faculty } from '../types/Faculty';
 import FacultyTableToggleSwitch from './_components/FacultyTableToggleSwitch';
 import DepartmentSecretariatsListTable from './_components/DepartmentSecretariatsListTable';
 import StudentAffairsInfoCard from './_components/StudentAffairsInfoCard';
@@ -152,7 +151,7 @@ export default function Dashboard() {
               <FacultySecretariatInfoCard
                 name={user?.name || 'N/A'}
                 email={user?.email || 'N/A'}
-                faculty={faculties.find((fac: Faculty) => fac.id === user?.facultyId)!} />
+                faculty={faculties.find((fac) => fac.id === user?.facultyId) || { id: 0, name: 'N/A' }} />
               
               <div className="mt-6">
                 <FacultyTableToggleSwitch 
@@ -166,14 +165,13 @@ export default function Dashboard() {
                 
                 {currentView === 'departments' && (
                   <>
-                    <DepartmentFilters onFilterChange={setDepartmentFilters} />
-                    <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={departmentFilters} />
+                    <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={{}} />
                   </>
                 )}
                 
                 {currentView === 'advisors' && (
                   <>
-                    <AdvisorFilters onFilterChange={setAdvisorFilters} />
+                    <AdvisorFilters onFilterChange={setAdvisorFilters} hideFacultyFilter={true} />
                     <AdvisorListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={advisorFilters} />
                   </>
                 )}

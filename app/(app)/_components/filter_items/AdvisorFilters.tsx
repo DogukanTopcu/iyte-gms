@@ -7,11 +7,13 @@ import { departments, faculties } from '../../../api/ubys/_shared/faculty-and-de
 type AdvisorFiltersProps = {
   onFilterChange: (filters: { department?: string; faculty?: string }) => void;
   initialFilters?: { department?: string; faculty?: string };
+  hideFacultyFilter?: boolean;
 };
 
 export default function AdvisorFilters({ 
   onFilterChange, 
-  initialFilters = {} 
+  initialFilters = {},
+  hideFacultyFilter = false
 }: AdvisorFiltersProps) {
   const [activeFilters, setActiveFilters] = useState<Record<string, string | null>>({
     department: initialFilters.department || null,
@@ -31,11 +33,12 @@ export default function AdvisorFilters({
   }));
 
   const filters: FilterConfig[] = [
-    {
+    // Only include faculty filter if hideFacultyFilter is false
+    ...(hideFacultyFilter ? [] : [{
       id: 'faculty',
       label: 'Faculty',
       options: facultyOptions,
-    },
+    }]),
     {
       id: 'department',
       label: 'Department',
