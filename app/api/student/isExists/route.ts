@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function GET(req: Request) {
-    const { searchParams } = new URL(req.url);
+export async function GET(req: NextRequest) {
+    const { searchParams } = req.nextUrl;
     const studentNumber = searchParams.get('studentId');
 
     if (!studentNumber) {

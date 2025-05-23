@@ -4,7 +4,7 @@ import { admins } from '../_shared/admin-data';
 
 // Handler function to process requests
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = req.nextUrl;
   const id = searchParams.get('id');
 
   // 1. Get all admin data

@@ -4,7 +4,7 @@ import { departments } from '../_shared/faculty-and-department-data';
 
 // Handler function to process requests
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = req.nextUrl;
   const id = searchParams.get('id');
   const departmentName = searchParams.get('departmentName');
 

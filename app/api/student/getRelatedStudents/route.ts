@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 // Get the students that are related to the Advisor, Department Secretariat, Faculty Secretariat
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
+  const { searchParams } = req.nextUrl;
   const id = searchParams.get('userId');
   const role = searchParams.get('role');
   

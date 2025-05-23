@@ -3,7 +3,7 @@ import { departments, faculties } from '../_shared/faculty-and-department-data';
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
+    const { searchParams } = req.nextUrl;
     const id = searchParams.get('id') ? parseInt(searchParams.get('id') as string, 10) : undefined;
     const facultyId = searchParams.get('facultyId') ? parseInt(searchParams.get('facultyId') as string, 10) : undefined;
     
