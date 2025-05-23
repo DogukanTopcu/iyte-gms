@@ -1,6 +1,6 @@
 "use client"
 import { useAuth } from '@/app/context/AuthContext'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Student {
@@ -30,43 +30,28 @@ const AddOutlierPage = () => {
   const [success, setSuccess] = useState<string | null>(null)
   const [isExists, setIsExists] = useState(false)
 
-  useEffect(() => {
-    const studentIdParam = searchParams.get('studentId');
-    if (studentIdParam) {
-      setSearchQuery(studentIdParam);
-      handleSearch(studentIdParam);
-    }
-  }, [searchParams]);
-
-  const addStudent = async () => {
-    if (!selectedStudent) return;
+  const isStudentExists = useCallback(async (studentId: number) => {
     try {
-      setLoading(true);
-      const response = await fetch('/api/student/addStudent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: selectedStudent.id,
-          studentId: selectedStudent.studentId,
-          name: selectedStudent.name,
-          email: selectedStudent.email,
-          departmentId: selectedStudent.departmentId,
-          advisorId: selectedStudent.advisorId
-        })
-      });
-      if (!response.ok) throw new Error('Failed to add student');
-      setError(null);
-      setSuccess('Student successfully added to the system!');
-      setIsExists(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add student');
-      setSuccess(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+      setLoading(true)
+      setError(null)
+      const response = await fetch(`/api/student/isExists?studentId=${studentId}`)
+      
+      if (!response.ok) {
+        setIsExists(false)
+        throw new Error('Failed to check student existence')
+      }
 
-  const handleSearch = async (query: string) => {
+      const data = await response.json()
+      setIsExists(data.exists)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+      setIsExists(false)
+    } finally {
+      setLoading(false)
+    }
+  }, []);
+
+  const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query)
 
     // Update URL with search parameter
@@ -101,28 +86,43 @@ const AddOutlierPage = () => {
     .finally(() => {
         setLoading(false);
     });
-  }
+  }, [router, user?.id, isStudentExists]);
 
-  const isStudentExists = async (studentId: number) => {
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await fetch(`/api/student/isExists?studentId=${studentId}`)
-      
-      if (!response.ok) {
-        setIsExists(false)
-        throw new Error('Failed to check student existence')
-      }
-
-      const data = await response.json()
-      setIsExists(data.exists)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-      setIsExists(false)
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    const studentIdParam = searchParams.get('studentId');
+    if (studentIdParam) {
+      setSearchQuery(studentIdParam);
+      handleSearch(studentIdParam);
     }
-  }
+  }, [searchParams, handleSearch]);
+
+  const addStudent = async () => {
+    if (!selectedStudent) return;
+    try {
+      setLoading(true);
+      const response = await fetch('/api/student/addStudent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: selectedStudent.id,
+          studentId: selectedStudent.studentId,
+          name: selectedStudent.name,
+          email: selectedStudent.email,
+          departmentId: selectedStudent.departmentId,
+          advisorId: selectedStudent.advisorId
+        })
+      });
+      if (!response.ok) throw new Error('Failed to add student');
+      setError(null);
+      setSuccess('Student successfully added to the system!');
+      setIsExists(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add student');
+      setSuccess(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const viewTranscript = () => {
     if (selectedStudent) {
