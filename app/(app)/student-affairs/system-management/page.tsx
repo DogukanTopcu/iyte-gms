@@ -200,20 +200,35 @@ const InitStudent = () => {
     setIsLoading(true);
     try {
       if (currentStep === 1) {
-
-        await fetch('/api/init/createInstitutions', {
+        const response = await fetch('/api/init/createInstitutions', {
           method: 'POST',
-        })
+        });
 
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create institutions');
+        }
+
+        // Small delay to ensure database transaction is complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         await institutionsTableFetchData();
         // Mark step 1 as initialized
         setInitializedSteps(prev => [...prev.filter(step => step !== 1), 1]);
       }
 
       else if (currentStep === 2) {
-        await fetch('/api/init/secretariats', {
+        const response = await fetch('/api/init/secretariats', {
           method: 'POST',
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create secretariats');
+        }
+
+        // Small delay to ensure database transaction is complete
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         await secretariatsTableFetchData();
         // Mark step 2 as initialized
@@ -221,10 +236,17 @@ const InitStudent = () => {
       }
 
       else if (currentStep === 3) {
-
-        await fetch('/api/init/advisors', {
+        const response = await fetch('/api/init/advisors', {
           method: 'POST',
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create advisors');
+        }
+
+        // Small delay to ensure database transaction is complete
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         await advisorsTableFetchData();
         // Mark step 3 as initialized
@@ -232,9 +254,17 @@ const InitStudent = () => {
       }
 
       else if (currentStep === 4) {
-        await fetch('/api/init/students', {
+        const response = await fetch('/api/init/students', {
           method: 'POST',
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to create students');
+        }
+
+        // Small delay to ensure database transaction is complete
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         await studentsTableFetchData();
         // Mark step 4 as initialized
@@ -243,6 +273,8 @@ const InitStudent = () => {
 
     } catch (error) {
       console.error('Error fetching data:', error);
+      // Show error to user (you might want to add a toast notification here)
+      alert(`Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`);
     } finally {
       setIsLoading(false);
     }
@@ -258,14 +290,27 @@ const InitStudent = () => {
           'Content-Type': 'application/json'
         }
       });
+      
       const facultyResponse = await fetch('/api/init/faculties', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json'
         }
       });
+
+      if (!deptResponse.ok) {
+        throw new Error(`Failed to fetch departments: ${deptResponse.status}`);
+      }
+      
+      if (!facultyResponse.ok) {
+        throw new Error(`Failed to fetch faculties: ${facultyResponse.status}`);
+      }
+
       const departments = await deptResponse.json();
       const faculties = await facultyResponse.json();
+
+      console.log('Departments fetched:', departments.length, departments);
+      console.log('Faculties fetched:', faculties.length, faculties);
 
       // Update the institution data state
       setInstitutionData({
