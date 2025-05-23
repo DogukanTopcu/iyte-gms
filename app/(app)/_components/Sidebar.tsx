@@ -66,7 +66,6 @@ export default function Sidebar({ activePage = 'home', userRole, onSidebarToggle
 
         {
           userRole === 'student' ? <StudentSidebar activePage={activePage} /> : 
-          userRole?.toLowerCase() === 'secretariat' ? <SecretariatSidebar activePage={activePage} /> :
           userRole?.toLowerCase() === 'student affairs' ? <StudentAffairsSidebar activePage={activePage} /> :
           userRole?.toLowerCase() === 'advisor' ? <AdvisorSidebar activePage={activePage} /> : 
           userRole?.toLowerCase() === 'department secretariat' ? <DeptSecretariatSidebar activePage={activePage} /> :
