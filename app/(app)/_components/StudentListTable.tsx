@@ -6,7 +6,7 @@ import { TableCell } from '@mui/material'
 import { TableContainer } from '@mui/material'
 import { CircularProgress, Typography } from '@mui/material'
 import { Box } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import statusName from '@/app/constants/graduation-status'
 import { useRouter } from 'next/navigation'
 
@@ -45,7 +45,6 @@ const StudentListTable = ({
 }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [students, setStudents] = useState<Student[]>([]);
-    const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
 
     const router = useRouter();
 
@@ -60,37 +59,37 @@ const StudentListTable = ({
         fetchStudents();
     }, [userId, role]);
 
-    // Apply filters when students data or filters change
-    useEffect(() => {
-      if (students.length > 0) {
-        let result = [...students];
-        
-        // Apply department filter
-        if (filters.department) {
-          result = result.filter(student => 
-            student.Department.id.toString() === filters.department
-          );
-        }
-        
-        // Apply advisor filter
-        if (filters.advisor) {
-          result = result.filter(student => 
-            student.Advisor.id.toString() === filters.advisor
-          );
-        }
-        
-        // Apply status filter
-        if (filters.status) {
-          result = result.filter(student => 
-            student.GraduationStatus.status === filters.status
-          );
-        }
-        
-        setFilteredStudents(result);
-      } else {
-        setFilteredStudents([]);
+    // Use useMemo for filtering to avoid infinite loops
+    const filteredStudents = useMemo(() => {
+      if (students.length === 0) {
+        return [];
       }
-    }, [students]);
+
+      let result = [...students];
+      
+      // Apply department filter
+      if (filters.department) {
+        result = result.filter(student => 
+          student.Department.id.toString() === filters.department
+        );
+      }
+      
+      // Apply advisor filter
+      if (filters.advisor) {
+        result = result.filter(student => 
+          student.Advisor.id.toString() === filters.advisor
+        );
+      }
+      
+      // Apply status filter
+      if (filters.status) {
+        result = result.filter(student => 
+          student.GraduationStatus.status === filters.status
+        );
+      }
+      
+      return result;
+    }, [students, filters.department, filters.advisor, filters.status]);
     
   return (
     <Box sx={{ mt: 4 }}>
