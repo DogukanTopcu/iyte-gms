@@ -431,7 +431,7 @@ const renderStepContent = () => {
           >
             {initializedSteps.includes(currentStep) ? 'Data Initialized' : 'Fetch Data'}
           </Button>
-          <Button
+          {/* <Button
             variant="outlined"
             color="warning"
             onClick={() => {
@@ -440,7 +440,7 @@ const renderStepContent = () => {
             disabled={isLoading || !initializedSteps.includes(currentStep)}
           >
             Reset Initialization
-          </Button>
+          </Button> */}
           <Button
             variant="outlined"
             onClick={handlePreviousStep}
