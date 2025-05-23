@@ -12,9 +12,10 @@ interface StudentWithPrismaDetails extends Student {
   // studentId from Prisma's Student model will be used for matching
 }
 
-// Interface for students after their GPA has been attached from transcript
-interface StudentWithGpa extends StudentWithPrismaDetails {
-  gpa: number; // GPA obtained from transcript
+// Interface for students after their GPA and term have been attached from transcript
+interface StudentWithGpaAndTerm extends StudentWithPrismaDetails {
+  gpa: number;  // GPA obtained from transcript
+  term: number; // Term obtained from transcript
 }
 
 export async function GET(req: NextRequest) {
@@ -83,28 +84,31 @@ export async function GET(req: NextRequest) {
       return NextResponse.json([], { status: 200 });
     }
 
-    // Create a map of studentId to GPA from the mock transcript data
-    const gpaMap = new Map<number, number>();
+    // Create a map of studentId to {gpa, term} from the mock transcript data, excluding term 10
+    const transcriptDetailsMap = new Map<number, { gpa: number, term: number }>();
     allMockTranscripts.forEach(transcript => {
-      // Ensure studentId and gpa are valid and gpa is a number
-      if (transcript.studentId && typeof transcript.gpa === 'number') {
-        gpaMap.set(transcript.studentId, transcript.gpa);
+      // Ensure studentId, gpa, and term are valid, gpa and term are numbers, and term is not 10
+      if (transcript.studentId &&
+          typeof transcript.gpa === 'number' &&
+          typeof transcript.term === 'number' &&
+          transcript.term !== 10) {
+        transcriptDetailsMap.set(transcript.studentId, { gpa: transcript.gpa, term: transcript.term });
       }
     });
 
-    // Augment students with GPA from transcripts and filter out those without a valid GPA
-    const studentsWithGpaData: StudentWithGpa[] = relevantStudentsFromPrisma
+    // Augment students with GPA and term from transcripts and filter out those without valid data
+    const studentsWithDetails: StudentWithGpaAndTerm[] = relevantStudentsFromPrisma
       .map(student => {
-        const gpa = gpaMap.get(student.studentId); // student.studentId is the student's number
-        return { ...student, gpa: gpa }; // gpa can be undefined here
+        const details = transcriptDetailsMap.get(student.studentId);
+        return { ...student, gpa: details?.gpa, term: details?.term };
       })
-      .filter(student => typeof student.gpa === 'number') as StudentWithGpa[]; // Ensure gpa is a number
+      .filter(student => typeof student.gpa === 'number' && typeof student.term === 'number') as StudentWithGpaAndTerm[];
 
-    if (studentsWithGpaData.length === 0) {
-      return NextResponse.json([], { status: 200 }); // No students with valid GPAs from transcripts
+    if (studentsWithDetails.length === 0) {
+      return NextResponse.json([], { status: 200 }); // No students with valid GPAs and terms from transcripts
     }
 
-    const gpas = studentsWithGpaData.map(student => student.gpa);
+    const gpas = studentsWithDetails.map(student => student.gpa);
     const uniqueSortedGpas = Array.from(new Set(gpas)).sort((a, b) => b - a);
     const topGpaTiers = uniqueSortedGpas.slice(0, 3);
 
@@ -112,12 +116,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json([], { status: 200 });
     }
 
-    let topStudents = studentsWithGpaData.filter(student =>
+    let topStudents = studentsWithDetails.filter(student =>
       topGpaTiers.includes(student.gpa)
     );
 
-    // Sort the final list of top students by GPA in descending order
-    topStudents.sort((a, b) => b.gpa - a.gpa);
+    // Sort the final list: primary sort by term (ascending), secondary sort by GPA (descending)
+    topStudents.sort((a, b) => {
+      if (a.term !== b.term) {
+        return a.term - b.term; // Ascending by term
+      }
+      return b.gpa - a.gpa; // Descending by GPA for same term
+    });
 
     return NextResponse.json(topStudents, { status: 200 });
 
