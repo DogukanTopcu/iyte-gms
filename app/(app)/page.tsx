@@ -151,7 +151,7 @@ export default function Dashboard() {
               <FacultySecretariatInfoCard
                 name={user?.name || 'N/A'}
                 email={user?.email || 'N/A'}
-                faculty={faculties.find((fac) => fac.id === user?.facultyId) || { id: 0, name: 'N/A' }} />
+                faculty={faculties.find((fac) => fac.id === user?.facultyId) || { id: 0, name: 'N/A', email: 'N/A' }} />
               
               <div className="mt-6">
                 <FacultyTableToggleSwitch 
@@ -171,7 +171,12 @@ export default function Dashboard() {
                 
                 {currentView === 'advisors' && (
                   <>
-                    <AdvisorFilters onFilterChange={setAdvisorFilters} hideFacultyFilter={true} />
+                    <AdvisorFilters 
+                      onFilterChange={setAdvisorFilters} 
+                      hideFacultyFilter={true} 
+                      userId={user?.facultyId || 0}
+                      role="faculty secretariat"
+                    />
                     <AdvisorListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={advisorFilters} />
                   </>
                 )}

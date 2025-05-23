@@ -8,6 +8,23 @@ import statusName from '@/app/constants/graduation-status';
 interface Advisor {
   id: number;
   name: string;
+  Department?: {
+    id: number;
+    name: string;
+    Faculty?: {
+      id: number;
+      name: string;
+    };
+  };
+}
+
+interface Department {
+  id: number;
+  name: string;
+  Faculty?: {
+    id: number;
+    name: string;
+  };
 }
 
 type StudentFiltersProps = {
@@ -29,6 +46,7 @@ export default function StudentFilters({
     status: initialFilters.status || null,
   });
   const [advisors, setAdvisors] = useState<Advisor[]>([]);
+  const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Fetch advisors data
@@ -52,13 +70,41 @@ export default function StudentFilters({
     fetchAdvisors();
   }, [userId, role]);
 
-  // Create department options from the imported departments
-  const departmentOptions = departments.map(dept => ({
+  // Fetch departments for faculty secretariat
+  useEffect(() => {
+    if (role === 'faculty secretariat') {
+      const fetchDepartments = async () => {
+        try {
+          const response = await fetch(`/api/deptSecretariat/getRelatedSecretariats?userId=${userId}&role=${role}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch departments');
+          }
+          const data = await response.json();
+          // Extract unique departments from department secretariats
+          const uniqueDepartments = data.map((secretariat: any) => ({
+            id: secretariat.Department.id,
+            name: secretariat.Department.name,
+          }));
+          setFetchedDepartments(uniqueDepartments);
+        } catch (error) {
+          console.error('Error fetching departments:', error);
+        }
+      };
+      
+      fetchDepartments();
+    }
+  }, [userId, role]);
+
+  // Create department options - use fetched departments for faculty secretariat, otherwise use all departments
+  const departmentOptions = (role === 'faculty secretariat' && fetchedDepartments.length > 0 
+    ? fetchedDepartments 
+    : departments
+  ).map(dept => ({
     label: dept.name,
     value: dept.id.toString(),
   }));
 
-  // Create advisor options from fetched advisors
+  // Create advisor options from fetched advisors (already filtered by faculty for faculty secretariat)
   const advisorOptions = advisors.map(advisor => ({
     label: advisor.name,
     value: advisor.id.toString(),
