@@ -4,13 +4,46 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AdvisorInfoCard from './_components/AdvisorInfoCard';
 import { Department } from '../types/Department';
-import { departments } from '../api/ubys/_shared/faculty-and-department-data';
+import { departments, faculties } from '../api/ubys/_shared/faculty-and-department-data';
 import StudentListTable from './_components/StudentListTable';
 import { UserCard } from './_components/StudentInfoCard';
 import DeptSecretariatInfoCard from './_components/DeptSecretariatInfoCard';
 import AdvisorListTable from './_components/AdvisorListTable';
 import TableToggleSwitch from './_components/TableToggleSwitch';
 import { useSearchParams, useRouter } from 'next/navigation';
+import FacultySecretariatInfoCard from './_components/FacultySecretariatInfoCard';
+import { Faculty } from '@prisma/client';
+import FacultyTableToggleSwitch from './_components/FacultyTableToggleSwitch';
+import DepartmentSecretariatsListTable from './_components/DepartmentSecretariatsListTable';
+
+// Define types for the tables
+interface DepartmentSecretariat {
+  id: number;
+  name: string;
+  email: string;
+  departmentId: number;
+  departmentName: string;
+}
+
+interface Advisor {
+  id: number;
+  name: string;
+  email: string;
+  departmentId: number;
+  departmentName: string;
+}
+
+interface Student {
+  id: number;
+  studentId: string;
+  name: string;
+  email: string;
+  departmentId: number;
+  departmentName: string;
+  advisorId: number;
+  advisorName: string;
+  status: string;
+}
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
@@ -19,9 +52,12 @@ export default function Dashboard() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  // Get view from URL params, default to 'students'
-  const currentView = searchParams.get('view') || 'students';
+  // Get view from URL params, default to 'students' for dept secretariat and 'departments' for faculty secretariat
+  const defaultView = userRole === 'faculty secretariat' ? 'departments' : 'students';
+  const currentView = searchParams.get('view') || defaultView;
   const showStudentsTable = currentView === 'students';
+  
+
   
   const handleToggleView = (showStudents: boolean) => {
     const params = new URLSearchParams(searchParams);
@@ -82,6 +118,39 @@ export default function Dashboard() {
               ) : (
                 <AdvisorListTable userId={user?.departmentId || 0} role="department secretariat" />
               )}
+            </>
+          )
+          : userRole === 'faculty secretariat' ? (
+            <>
+              {isLoading && <p>Loading secretariat data...</p>}
+              {error && <p className="text-red-600">Error: {error}</p>}
+              <FacultySecretariatInfoCard
+                name={user?.name || 'N/A'}
+                email={user?.email || 'N/A'}
+                faculty={faculties.find((fac: Faculty) => fac.id === user?.facultyId)!} />
+              
+              <div className="mt-6">
+                <FacultyTableToggleSwitch 
+                  onToggle={(view) => {
+                    const params = new URLSearchParams(searchParams);
+                    params.set('view', view);
+                    router.push(`?${params.toString()}`);
+                  }}
+                  initialView={currentView as 'departments' | 'advisors' | 'students'}
+                />
+                
+                {currentView === 'departments' && (
+                  <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="faculty secretariat" />
+                )}
+                
+                {currentView === 'advisors' && (
+                  <AdvisorListTable userId={user?.facultyId || 0} role="faculty secretariat" />
+                )}
+                
+                {currentView === 'students' && (
+                  <StudentListTable userId={user?.facultyId || 0} role="faculty secretariat" />
+                )}
+              </div>
             </>
           ) : null
         }

@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
       },
     });
     return NextResponse.json(students, { status: 200 });
-  }else if (role === 'faculty') {
+  }else if (role === 'faculty secretariat') {
     const departments = await prisma.department.findMany({
       where: { facultyId: parseInt(id) },
       select: { id: true },
@@ -43,7 +43,6 @@ export async function GET(req: NextRequest) {
     const students = await prisma.student.findMany({
       where: { 
       departmentId: { in: departmentIds },
-      GraduationStatus: { status: 'DEPARTMENT_SECRETARIAT_APPROVAL' },
       },
       include: {
         Department: true,

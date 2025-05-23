@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('userId');
   const role = searchParams.get('role');
+  
   // 1. Get all advisor data
   if (!id || !role) {
     return NextResponse.json({ message: 'Students not found' }, { status: 404 });
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
       },
     });
     return NextResponse.json(students, { status: 200 });
-  }else if (role === 'faculty') {
+  }else if (role === 'faculty secretariat') {
     // 3. Get all faculty data
     const departments = await prisma.department.findMany({
       where: { facultyId: parseInt(id) },
@@ -54,7 +55,7 @@ export async function GET(req: NextRequest) {
       },
     });
     return NextResponse.json(students, { status: 200 });
-  }else if (role === 'secretariat') {
+  }else if (role === 'student affairs') {
     // 4. Get all university data
     const students = await prisma.student.findMany({
       where: { GraduationStatus: { status: 'FACULTY_SECRETARIAT_APPROVAL' } },

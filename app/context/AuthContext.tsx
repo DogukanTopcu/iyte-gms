@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import toast from 'react-hot-toast';
+import { Faculty } from '@prisma/client';
 
 export type UserRole = 'faculty secretariat' | 'department secretariat' | 'faculity' | 'Student Affairs' | "advisor" | "student" | null;
 
@@ -28,8 +29,10 @@ export interface User {
   email: string;
   departmentId: number;
   advisorId: number;
+  facultyId: number;
   grade: number;
   department: Department;
+  faculty: Faculty;
   advisor: Advisor;
   role: UserRole;
 }
