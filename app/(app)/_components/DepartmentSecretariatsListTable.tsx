@@ -18,14 +18,29 @@ interface DepartmentSecretariat {
     id: number;
     name: string;
     Faculty: {
+      id: number;
       name: string;
     };
   };
 }
 
-const DepartmentSecretariatsListTable = ({ userId, role }: { userId: number, role: string }) => {
+interface DepartmentFilters {
+  faculty?: string;
+  status?: string;
+}
+
+const DepartmentSecretariatsListTable = ({ 
+  userId, 
+  role, 
+  filters = {} 
+}: { 
+  userId: number, 
+  role: string,
+  filters?: DepartmentFilters
+}) => {
     const [isLoading, setIsLoading] = useState(false);
     const [departmentSecretariats, setDepartmentSecretariats] = useState<DepartmentSecretariat[]>([]);
+    const [filteredDepartmentSecretariats, setFilteredDepartmentSecretariats] = useState<DepartmentSecretariat[]>([]);
     const [selectedDepartmentSecretariat, setSelectedDepartmentSecretariat] = useState<DepartmentSecretariat | null>(null);
 
     const router = useRouter();
@@ -42,7 +57,7 @@ const DepartmentSecretariatsListTable = ({ userId, role }: { userId: number, rol
         fetchAdvisors();
     }, [userId, role]);
 
-    // Handle selected advisor from URL params
+    // Handle selected department secretariat from URL params
     useEffect(() => {
         const departmentSecretariatId = searchParams.get('departmentSecretariatId');
         if (departmentSecretariatId && departmentSecretariats.length > 0) {
@@ -53,15 +68,39 @@ const DepartmentSecretariatsListTable = ({ userId, role }: { userId: number, rol
         }
     }, [searchParams, departmentSecretariats]);
 
+    // Apply filters when department secretariats data or filters change
+    useEffect(() => {
+      if (departmentSecretariats.length > 0) {
+        let result = [...departmentSecretariats];
+        
+        // Apply faculty filter
+        if (filters.faculty) {
+          result = result.filter(dept => 
+            dept.Department.Faculty.id.toString() === filters.faculty
+          );
+        }
+        
+        // Apply status filter if needed in the future
+        if (filters.status) {
+          // If departments have status, filter by it
+          // Currently not implemented
+        }
+        
+        setFilteredDepartmentSecretariats(result);
+      } else {
+        setFilteredDepartmentSecretariats([]);
+      }
+    }, [departmentSecretariats, filters]);
+
     const handleSelectDepartmentSecretariat = (departmentSecretariat: DepartmentSecretariat) => {
-        const params = new URLSearchParams(searchParams);
+        const params = new URLSearchParams(searchParams.toString());
         params.set('departmentSecretariatId', departmentSecretariat.id.toString());
         router.push(`?${params.toString()}`);
         setSelectedDepartmentSecretariat(departmentSecretariat);
     };
 
     const handleBackToDepartmentSecretariats = () => {
-        const params = new URLSearchParams(searchParams);
+        const params = new URLSearchParams(searchParams.toString());
         params.delete('departmentSecretariatId');
         router.push(`?${params.toString()}`);
     };
@@ -87,10 +126,14 @@ const DepartmentSecretariatsListTable = ({ userId, role }: { userId: number, rol
               <p className="text-sm text-gray-600">{selectedDepartmentSecretariat.email} • {selectedDepartmentSecretariat.Department.name}</p>
             </div>
           </div>
-          <AdvisorListTable userId={selectedDepartmentSecretariat.Department.id} role="department secretariat" />
+          <AdvisorListTable 
+            userId={selectedDepartmentSecretariat.Department.id} 
+            role="department secretariat" 
+            filters={{}} 
+          />
         </div>
       ) : (
-        // Show Advisors table
+        // Show Department Secretariats table
         <>
           {isLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
@@ -112,8 +155,8 @@ const DepartmentSecretariatsListTable = ({ userId, role }: { userId: number, rol
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {departmentSecretariats.length > 0 ? (
-                      departmentSecretariats.map((departmentSecretariat) => (
+                    {filteredDepartmentSecretariats.length > 0 ? (
+                      filteredDepartmentSecretariats.map((departmentSecretariat) => (
                         <TableRow key={departmentSecretariat.id}>
                           <TableCell>{departmentSecretariat.id}</TableCell>
                           <TableCell>{departmentSecretariat.name}</TableCell>
@@ -125,7 +168,7 @@ const DepartmentSecretariatsListTable = ({ userId, role }: { userId: number, rol
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} align="center">No advisors available</TableCell>
+                        <TableCell colSpan={6} align="center">No department secretariats available</TableCell>
                       </TableRow>
                     )}
                   </TableBody>

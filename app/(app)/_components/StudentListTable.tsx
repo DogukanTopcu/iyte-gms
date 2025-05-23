@@ -16,9 +16,11 @@ interface Student {
   name: string;
   email: string;
   Department: {
+    id: number;
     name: string;
   };
   Advisor: {
+    id: number;
     name: string;
   };
   GraduationStatus: {
@@ -26,9 +28,24 @@ interface Student {
   };
 }
 
-const StudentListTable = ({ userId, role }: { userId: number, role: string }) => {
+interface StudentFilters {
+  department?: string;
+  advisor?: string;
+  status?: string;
+}
+
+const StudentListTable = ({ 
+  userId, 
+  role, 
+  filters = {} 
+}: { 
+  userId: number, 
+  role: string,
+  filters?: StudentFilters
+}) => {
     const [isLoading, setIsLoading] = useState(false);
     const [students, setStudents] = useState<Student[]>([]);
+    const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
 
     const router = useRouter();
 
@@ -43,6 +60,37 @@ const StudentListTable = ({ userId, role }: { userId: number, role: string }) =>
         fetchStudents();
     }, [userId, role]);
 
+    // Apply filters when students data or filters change
+    useEffect(() => {
+      if (students.length > 0) {
+        let result = [...students];
+        
+        // Apply department filter
+        if (filters.department) {
+          result = result.filter(student => 
+            student.Department.id.toString() === filters.department
+          );
+        }
+        
+        // Apply advisor filter
+        if (filters.advisor) {
+          result = result.filter(student => 
+            student.Advisor.id.toString() === filters.advisor
+          );
+        }
+        
+        // Apply status filter
+        if (filters.status) {
+          result = result.filter(student => 
+            student.GraduationStatus.status === filters.status
+          );
+        }
+        
+        setFilteredStudents(result);
+      } else {
+        setFilteredStudents([]);
+      }
+    }, [students, filters]);
     
   return (
     <Box sx={{ mt: 4 }}>
@@ -67,8 +115,8 @@ const StudentListTable = ({ userId, role }: { userId: number, role: string }) =>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {students.length > 0 ? (
-                  students.map((student) => (
+                {filteredStudents.length > 0 ? (
+                  filteredStudents.map((student) => (
                     <TableRow key={student.id}>
                       <TableCell>{student.studentId}</TableCell>
                       <TableCell>{student.name}</TableCell>
@@ -85,7 +133,7 @@ const StudentListTable = ({ userId, role }: { userId: number, role: string }) =>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} align="center">No students available</TableCell>
+                    <TableCell colSpan={7} align="center">No students available</TableCell>
                   </TableRow>
                 )}
               </TableBody>

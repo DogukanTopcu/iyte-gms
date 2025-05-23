@@ -15,16 +15,32 @@ interface Advisor {
   name: string;
   email: string;
   Department: {
+    id: number;
     name: string;
     Faculty: {
+      id: number;
       name: string;
     };
   };
 }
 
-const AdvisorListTable = ({ userId, role }: { userId: number, role: string }) => {
+interface AdvisorFilters {
+  department?: string;
+  faculty?: string;
+}
+
+const AdvisorListTable = ({ 
+  userId, 
+  role, 
+  filters = {} 
+}: { 
+  userId: number, 
+  role: string,
+  filters?: AdvisorFilters 
+}) => {
     const [isLoading, setIsLoading] = useState(false);
     const [advisors, setAdvisors] = useState<Advisor[]>([]);
+    const [filteredAdvisors, setFilteredAdvisors] = useState<Advisor[]>([]);
     const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
 
     const router = useRouter();
@@ -52,14 +68,39 @@ const AdvisorListTable = ({ userId, role }: { userId: number, role: string }) =>
         }
     }, [searchParams, advisors]);
 
+    // Apply filters when advisors data or filters change
+    useEffect(() => {
+      if (advisors.length > 0) {
+        let result = [...advisors];
+        
+        // Apply department filter
+        if (filters.department) {
+          result = result.filter(advisor => 
+            advisor.Department.id.toString() === filters.department
+          );
+        }
+        
+        // Apply faculty filter
+        if (filters.faculty) {
+          result = result.filter(advisor => 
+            advisor.Department.Faculty.id.toString() === filters.faculty
+          );
+        }
+        
+        setFilteredAdvisors(result);
+      } else {
+        setFilteredAdvisors([]);
+      }
+    }, [advisors, filters]);
+
     const handleSelectAdvisor = (advisor: Advisor) => {
-        const params = new URLSearchParams(searchParams);
+        const params = new URLSearchParams(searchParams.toString());
         params.set('advisorId', advisor.id.toString());
         router.push(`?${params.toString()}`);
     };
 
     const handleBackToAdvisors = () => {
-        const params = new URLSearchParams(searchParams);
+        const params = new URLSearchParams(searchParams.toString());
         params.delete('advisorId');
         router.push(`?${params.toString()}`);
     };
@@ -110,8 +151,8 @@ const AdvisorListTable = ({ userId, role }: { userId: number, role: string }) =>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {advisors.length > 0 ? (
-                      advisors.map((advisor) => (
+                    {filteredAdvisors.length > 0 ? (
+                      filteredAdvisors.map((advisor) => (
                         <TableRow key={advisor.id}>
                           <TableCell>{advisor.id}</TableCell>
                           <TableCell>{advisor.name}</TableCell>

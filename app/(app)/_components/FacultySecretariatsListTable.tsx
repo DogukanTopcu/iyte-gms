@@ -20,9 +20,22 @@ interface FacultySecretariat {
   };
 }
 
-const FacultySecretariatsListTable = ({ userId, role }: { userId: number, role: string }) => {
+interface FacultyFilters {
+  status?: string;
+}
+
+const FacultySecretariatsListTable = ({ 
+  userId, 
+  role, 
+  filters = {} 
+}: { 
+  userId: number, 
+  role: string,
+  filters?: FacultyFilters
+}) => {
     const [isLoading, setIsLoading] = useState(false);
     const [facultySecretariats, setFacultySecretariats] = useState<FacultySecretariat[]>([]);
+    const [filteredFacultySecretariats, setFilteredFacultySecretariats] = useState<FacultySecretariat[]>([]);
     const [selectedFacultySecretariat, setSelectedFacultySecretariat] = useState<FacultySecretariat | null>(null);
 
     const router = useRouter();
@@ -39,7 +52,7 @@ const FacultySecretariatsListTable = ({ userId, role }: { userId: number, role: 
         fetchFacultySecretariats();
     }, [userId, role]);
 
-    // Handle selected advisor from URL params
+    // Handle selected faculty secretariat from URL params
     useEffect(() => {
         const facultySecretariatId = searchParams.get('facultySecretariatId');
         if (facultySecretariatId && facultySecretariats.length > 0) {
@@ -50,15 +63,32 @@ const FacultySecretariatsListTable = ({ userId, role }: { userId: number, role: 
         }
     }, [searchParams, facultySecretariats]);
 
+    // Apply filters when faculty secretariats data or filters change
+    useEffect(() => {
+      if (facultySecretariats.length > 0) {
+        let result = [...facultySecretariats];
+        
+        // Apply status filter if needed
+        if (filters.status) {
+          // If faculty secretariats have status, filter by it
+          // Currently not implemented
+        }
+        
+        setFilteredFacultySecretariats(result);
+      } else {
+        setFilteredFacultySecretariats([]);
+      }
+    }, [facultySecretariats, filters]);
+
     const handleSelectFacultySecretariat = (facultySecretariat: FacultySecretariat) => {
-        const params = new URLSearchParams(searchParams);
+        const params = new URLSearchParams(searchParams.toString());
         params.set('facultySecretariatId', facultySecretariat.id.toString());
         router.push(`?${params.toString()}`);
         setSelectedFacultySecretariat(facultySecretariat);
     };
 
     const handleBackToFacultySecretariats = () => {
-        const params = new URLSearchParams(searchParams);
+        const params = new URLSearchParams(searchParams.toString());
         params.delete('facultySecretariatId');
         router.push(`?${params.toString()}`);
     };
@@ -67,7 +97,7 @@ const FacultySecretariatsListTable = ({ userId, role }: { userId: number, role: 
   return (
     <Box sx={{ mt: 4 }}>
       {selectedFacultySecretariat ? (
-        // Show StudentListTable for selected department secretariat
+        // Show DepartmentSecretariatsListTable for selected faculty secretariat
         <div>
             <div className="flex items-center gap-4 mb-4">
              <button 
@@ -84,10 +114,14 @@ const FacultySecretariatsListTable = ({ userId, role }: { userId: number, role: 
               <p className="text-sm text-gray-600">{selectedFacultySecretariat.email} • {selectedFacultySecretariat.Faculty.name}</p>
             </div>
           </div>
-          <DepartmentSecretariatsListTable userId={selectedFacultySecretariat.Faculty.id} role="faculty secretariat" />
+          <DepartmentSecretariatsListTable 
+            userId={selectedFacultySecretariat.Faculty.id} 
+            role="faculty secretariat"
+            filters={{}} 
+          />
         </div>
       ) : (
-        // Show Advisors table
+        // Show Faculty Secretariats table
         <>
           {isLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
@@ -108,8 +142,8 @@ const FacultySecretariatsListTable = ({ userId, role }: { userId: number, role: 
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {facultySecretariats.length > 0 ? (
-                      facultySecretariats.map((facultySecretariat) => (
+                    {filteredFacultySecretariats.length > 0 ? (
+                      filteredFacultySecretariats.map((facultySecretariat) => (
                         <TableRow key={facultySecretariat.id}>
                           <TableCell>{facultySecretariat.id}</TableCell>
                           <TableCell>{facultySecretariat.name}</TableCell>
@@ -120,7 +154,7 @@ const FacultySecretariatsListTable = ({ userId, role }: { userId: number, role: 
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} align="center">No advisors available</TableCell>
+                        <TableCell colSpan={5} align="center">No faculty secretariats available</TableCell>
                       </TableRow>
                     )}
                   </TableBody>

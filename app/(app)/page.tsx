@@ -12,12 +12,14 @@ import AdvisorListTable from './_components/AdvisorListTable';
 import TableToggleSwitch from './_components/TableToggleSwitch';
 import { useSearchParams, useRouter } from 'next/navigation';
 import FacultySecretariatInfoCard from './_components/FacultySecretariatInfoCard';
-import { Faculty } from '@prisma/client';
+import { Faculty } from '../types/Faculty';
 import FacultyTableToggleSwitch from './_components/FacultyTableToggleSwitch';
 import DepartmentSecretariatsListTable from './_components/DepartmentSecretariatsListTable';
 import StudentAffairsInfoCard from './_components/StudentAffairsInfoCard';
 import AdminTableToggleSwitch from './_components/AdminTableToggleSwitch';
 import FacultySecretariatsListTable from './_components/FacultySecretariatsListTable';
+import { StudentFilters, AdvisorFilters, DepartmentFilters, FacultyFilters } from './_components/filter_items';
+import { Box } from '@mui/material';
 
 // Define types for the tables
 interface DepartmentSecretariat {
@@ -60,10 +62,14 @@ export default function Dashboard() {
   const currentView = searchParams.get('view') || defaultView;
   const showStudentsTable = currentView === 'students';
   
+  // Filter states for different views
+  const [studentFilters, setStudentFilters] = useState({});
+  const [advisorFilters, setAdvisorFilters] = useState({});
+  const [departmentFilters, setDepartmentFilters] = useState({});
+  const [facultyFilters, setFacultyFilters] = useState({});
 
-  
   const handleToggleView = (showStudents: boolean) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     params.set('view', showStudents ? 'students' : 'advisors');
     router.push(`?${params.toString()}`);
   };
@@ -89,7 +95,12 @@ export default function Dashboard() {
                 name={user?.name || 'N/A'}
                 email={user?.email || 'N/A'}
                 department={departments.find((dep: Department) => dep.id === user?.departmentId) || { id: 0, name: 'N/A' }} />
-              <StudentListTable userId={user?.id || 0} role="advisor" />
+              <StudentFilters 
+                onFilterChange={setStudentFilters} 
+                userId={user?.id || 0}
+                role="advisor"
+              />
+              <StudentListTable userId={user?.id || 0} role="advisor" filters={studentFilters} />
             </>
           )
           : userRole === 'student' ? (
@@ -118,9 +129,19 @@ export default function Dashboard() {
               />
               
               {showStudentsTable ? (
-                <StudentListTable userId={user?.departmentId || 0} role="department secretariat" />
+                <>
+                  <StudentFilters 
+                    onFilterChange={setStudentFilters} 
+                    userId={user?.departmentId || 0}
+                    role="department secretariat"
+                  />
+                  <StudentListTable userId={user?.departmentId || 0} role="department secretariat" filters={studentFilters} />
+                </>
               ) : (
-                <AdvisorListTable userId={user?.departmentId || 0} role="department secretariat" />
+                <>
+                  <AdvisorFilters onFilterChange={setAdvisorFilters} />
+                  <AdvisorListTable userId={user?.departmentId || 0} role="department secretariat" filters={advisorFilters} />
+                </>
               )}
             </>
           )
@@ -136,7 +157,7 @@ export default function Dashboard() {
               <div className="mt-6">
                 <FacultyTableToggleSwitch 
                   onToggle={(view) => {
-                    const params = new URLSearchParams(searchParams);
+                    const params = new URLSearchParams(searchParams.toString());
                     params.set('view', view);
                     router.push(`?${params.toString()}`);
                   }}
@@ -144,15 +165,28 @@ export default function Dashboard() {
                 />
                 
                 {currentView === 'departments' && (
-                  <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="faculty secretariat" />
+                  <>
+                    <DepartmentFilters onFilterChange={setDepartmentFilters} />
+                    <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={departmentFilters} />
+                  </>
                 )}
                 
                 {currentView === 'advisors' && (
-                  <AdvisorListTable userId={user?.facultyId || 0} role="faculty secretariat" />
+                  <>
+                    <AdvisorFilters onFilterChange={setAdvisorFilters} />
+                    <AdvisorListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={advisorFilters} />
+                  </>
                 )}
                 
                 {currentView === 'students' && (
-                  <StudentListTable userId={user?.facultyId || 0} role="faculty secretariat" />
+                  <>
+                    <StudentFilters 
+                      onFilterChange={setStudentFilters} 
+                      userId={user?.facultyId || 0}
+                      role="faculty secretariat"
+                    />
+                    <StudentListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={studentFilters} />
+                  </>
                 )}
               </div>
             </>
@@ -168,7 +202,7 @@ export default function Dashboard() {
               <div className="mt-6">
                 <AdminTableToggleSwitch 
                   onToggle={(view) => {
-                    const params = new URLSearchParams(searchParams);
+                    const params = new URLSearchParams(searchParams.toString());
                     params.set('view', view);
                     router.push(`?${params.toString()}`);
                   }}
@@ -176,19 +210,35 @@ export default function Dashboard() {
                 />
 
                 {currentView === 'faculties' && (
-                  <FacultySecretariatsListTable userId={user?.id || 0} role="student affairs" />
+                  <>
+                    <FacultyFilters onFilterChange={setFacultyFilters} />
+                    <FacultySecretariatsListTable userId={user?.id || 0} role="student affairs" filters={facultyFilters} />
+                  </>
                 )}
                 
                 {currentView === 'departments' && (
-                  <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="student affairs" />
+                  <>
+                    <DepartmentFilters onFilterChange={setDepartmentFilters} />
+                    <DepartmentSecretariatsListTable userId={user?.facultyId || 0} role="student affairs" filters={departmentFilters} />
+                  </>
                 )}
                 
                 {currentView === 'advisors' && (
-                  <AdvisorListTable userId={user?.facultyId || 0} role="student affairs" />
+                  <>
+                    <AdvisorFilters onFilterChange={setAdvisorFilters} />
+                    <AdvisorListTable userId={user?.facultyId || 0} role="student affairs" filters={advisorFilters} />
+                  </>
                 )}
                 
                 {currentView === 'students' && (
-                  <StudentListTable userId={user?.id || 0} role="student affairs" />
+                  <>
+                    <StudentFilters 
+                      onFilterChange={setStudentFilters} 
+                      userId={user?.id || 0}
+                      role="student affairs"
+                    />
+                    <StudentListTable userId={user?.id || 0} role="student affairs" filters={studentFilters} />
+                  </>
                 )}
               </div>
             </>
