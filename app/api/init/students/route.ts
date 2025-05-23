@@ -39,17 +39,6 @@ export async function POST() {
                     advisorId: student.advisorId,
                 }
             });
-
-            await prisma.graduationStatus.upsert({
-                where: { studentId: student.id },
-                update: {
-                    status: "SYSTEM_APPROVAL",
-                },
-                create: {
-                    studentId: student.id,
-                    status: "SYSTEM_APPROVAL",
-                }
-            });
         }
         
         return NextResponse.json({ message: 'Students created successfully' }, { status: 200 });
