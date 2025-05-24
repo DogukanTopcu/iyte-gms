@@ -96,15 +96,6 @@ const InitStudent = () => {
   const [maxStep, setMaxStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Add state to track which steps have been initialized
-  const [initializedSteps, setInitializedSteps] = useState<number[]>(() => {
-    // Load from localStorage on initialization
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('ubys-initialized-steps');
-      return saved ? JSON.parse(saved) : [];
-    }
-    return [];
-  });
 
   const [institutionData, setInstitutionData] = useState<InstitutionData>({
     departments: [],
@@ -157,12 +148,6 @@ const InitStudent = () => {
     fetchCurrentData();
   }, []);
 
-  // Save initialized steps to localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('ubys-initialized-steps', JSON.stringify(initializedSteps));
-    }
-  }, [initializedSteps]);
 
   const handleStepClick = (stepId: number) => {
     if (stepId <= currentStep) {
@@ -214,7 +199,6 @@ const InitStudent = () => {
         
         await institutionsTableFetchData();
         // Mark step 1 as initialized
-        setInitializedSteps(prev => [...prev.filter(step => step !== 1), 1]);
       }
 
       else if (currentStep === 2) {
@@ -232,7 +216,6 @@ const InitStudent = () => {
 
         await secretariatsTableFetchData();
         // Mark step 2 as initialized
-        setInitializedSteps(prev => [...prev.filter(step => step !== 2), 2]);
       }
 
       else if (currentStep === 3) {
@@ -250,7 +233,6 @@ const InitStudent = () => {
 
         await advisorsTableFetchData();
         // Mark step 3 as initialized
-        setInitializedSteps(prev => [...prev.filter(step => step !== 3), 3]);
       }
 
       else if (currentStep === 4) {
@@ -268,7 +250,6 @@ const InitStudent = () => {
 
         await studentsTableFetchData();
         // Mark step 4 as initialized
-        setInitializedSteps(prev => [...prev.filter(step => step !== 4), 4]);
       }
 
     } catch (error) {
@@ -308,9 +289,6 @@ const InitStudent = () => {
 
       const departments = await deptResponse.json();
       const faculties = await facultyResponse.json();
-
-      console.log('Departments fetched:', departments.length, departments);
-      console.log('Faculties fetched:', faculties.length, faculties);
 
       // Update the institution data state
       setInstitutionData({
@@ -403,23 +381,24 @@ const renderStepContent = () => {
           <p className="text-gray-600">{currentStepData.description}</p>
           {/* Show initialization status */}
           <div className="mt-2">
-            {initializedSteps.includes(currentStep) ? (
+          {currentStep === 1 && institutionData.departments.length > 0 && institutionData.faculties.length > 0 && !isLoading ? (
               <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
+            ) 
+            : currentStep === 2 && secretariatsData.deptSecretariats.length > 0 && secretariatsData.facultySecretariats.length > 0 && !isLoading ? (
+              <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
+            ) 
+            : currentStep === 3 && advisorsData.length > 0 && !isLoading ? (
+              <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
+            ) 
+            : currentStep === 4 && studentsData.length > 0 && !isLoading ? (
+              <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
+            ) 
+            : isLoading ? (
+              <span className="text-gray-500 text-sm font-medium">⏳ Loading...</span>
             ) : (
-              (() => {
-                let hasData = false;
-                if (currentStep === 1) hasData = institutionData.departments.length > 0;
-                if (currentStep === 2) hasData = secretariatsData.deptSecretariats.length > 0;
-                if (currentStep === 3) hasData = advisorsData.length > 0;
-                if (currentStep === 4) hasData = studentsData.length > 0;
-                
-                return hasData ? (
-                  <span className="text-orange-600 text-sm font-medium">⚠ Existing data found (not initialized)</span>
-                ) : (
-                  <span className="text-gray-500 text-sm font-medium">⏳ Not initialized</span>
-                );
-              })()
+              <span className="text-gray-500 text-sm font-medium">❌ Not initialized</span>
             )}
+            
           </div>
         </div>
         <Stack direction="row" spacing={2}>
@@ -427,19 +406,12 @@ const renderStepContent = () => {
             variant="contained"
             color="primary"
             onClick={() => fetchData()}
-            disabled={isLoading || initializedSteps.includes(currentStep)}
+            disabled={isLoading}
           >
-            {initializedSteps.includes(currentStep) ? 'Data Initialized' : 'Fetch Data'}
-          </Button>
-          <Button
-            variant="outlined"
-            color="warning"
-            onClick={() => {
-              setInitializedSteps(prev => prev.filter(step => step !== currentStep));
-            }}
-            disabled={isLoading || !initializedSteps.includes(currentStep)}
-          >
-            Reset Initialization
+            {currentStep === 1 && institutionData.departments.length > 0 && institutionData.faculties.length > 0 ? 'Update Data' 
+            : currentStep === 2 && secretariatsData.deptSecretariats.length > 0 && secretariatsData.facultySecretariats.length > 0 ? 'Update Data' 
+            : currentStep === 3 && advisorsData.length > 0 ? 'Update Data' 
+            : currentStep === 4 && studentsData.length > 0 ? 'Update Data' : 'Fetch Data'}
           </Button>
           <Button
             variant="outlined"
