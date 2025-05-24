@@ -9,6 +9,8 @@ import { Box } from '@mui/material'
 import React, { useEffect, useState, useMemo } from 'react'
 import statusName from '@/app/constants/graduation-status'
 import { useRouter } from 'next/navigation'
+import { generateHighHonourPdf } from '../lib/certificatepdf-highhonour'
+import { generateHonourPdf } from '../lib/certificatepdf-honour'
 
 interface Student {
   gpa: number;
@@ -158,6 +160,7 @@ const CertificateStudentsTable = ({
                         Transcript
                     </button>
                     <button 
+                        onClick={() => certificateType === 'highHonor' ? generateHighHonourPdf([student]) : generateHonourPdf([student])}
                         className={`px-3 py-1 text-white text-xs rounded hover:opacity-90 whitespace-nowrap ${
                             certificateType === 'highHonor' 
                                 ? 'bg-purple-600 hover:bg-purple-700' 
@@ -242,6 +245,7 @@ const CertificateStudentsTable = ({
                     {filteredStudents.length > 0 && (
                         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-start', gap: 2 }}>
                             <button 
+                                onClick={() => certificateType === 'highHonor' ? generateHighHonourPdf(filteredStudents) : generateHonourPdf(filteredStudents)}
                                 className={`px-4 py-2 text-white rounded hover:opacity-90 flex items-center gap-2 ${
                                     certificateType === 'highHonor' 
                                         ? 'bg-purple-600 hover:bg-purple-700' 
