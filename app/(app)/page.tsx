@@ -78,10 +78,17 @@ export default function Dashboard() {
       setIsLoading(false);
     }
   }, [user]);
-
+  function capitalizeWords(input: string): string {
+    return input
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+  
+  const panelTitle = `(${capitalizeWords(String(userRole))} Panel)`;
   return (
     <main className="flex-1 p-8">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-6">Graduation Management System ({userRole} panel)</h1>
+        <h1 className="text-2xl font-semibold text-gray-800 mb-6">Graduation Management System {panelTitle}</h1>
 
         {
           userRole === 'advisor' ? (
