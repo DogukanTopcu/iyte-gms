@@ -107,7 +107,7 @@ const StudentListTable = ({
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>ID</TableCell>
+                  <TableCell>Student ID</TableCell>
                   <TableCell>Name</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Department</TableCell>
@@ -120,7 +120,7 @@ const StudentListTable = ({
                 {filteredStudents.length > 0 ? (
                   filteredStudents.map((student) => (
                     <TableRow key={student.id}>
-                      <TableCell>{student.Student.id}</TableCell>
+                      <TableCell>{student.Student.studentId}</TableCell>
                       <TableCell>{student.Student.name}</TableCell>
                       <TableCell>{student.Student.email}</TableCell>
                       <TableCell>{student.Student.Department.name}</TableCell>
