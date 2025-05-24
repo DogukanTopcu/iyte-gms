@@ -6,8 +6,9 @@ const protectedRoutes = {
   '/advisor': ['advisor'],
   '/dept-secretariat': ['department secretariat'],
   '/faculty-secretariat': ['faculty secretariat'],
-  '/student': ['student'],
+  
   '/student-affairs': ['student affairs'],
+  '/student': ['student'],
 }
 
 // Define public routes that don't require authentication
@@ -25,6 +26,7 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/images/') ||
     pathname.startsWith('/icons/') ||
     pathname.startsWith('/static/') ||
+    pathname.startsWith('/public/') ||
     pathname.includes('.') && !pathname.endsWith('.html')
   ) {
     console.log('📁 Static asset, skipping middleware:', pathname)
