@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
 
 export async function POST() {
@@ -10,6 +13,7 @@ export async function POST() {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
       },
     });
 
@@ -55,10 +59,24 @@ export async function POST() {
       });
     }
 
-    return NextResponse.json({ message: 'Secretariats created successfully' }, { status: 200 });
+    return NextResponse.json({ message: 'Secretariats created successfully' },
+       { 
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
+      });
   } catch (error) {
     console.error('Error creating secretariats:', error);
-    return NextResponse.json({ error: 'Failed to create secretariats' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create secretariats' }, 
+      {
+         status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+          },
+      });
   } finally {
     await prisma.$disconnect();
   }
@@ -79,10 +97,24 @@ export async function GET() {
       }
     });
 
-    return NextResponse.json({ deptSecretariatsWithDepartment, facultySecretariatsWithFaculty }, { status: 200 });
+    return NextResponse.json({ deptSecretariatsWithDepartment, facultySecretariatsWithFaculty }, 
+      {
+         status: 200,
+         headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+          },
+      });
   } catch (error) {
     console.error('Error fetching secretariats:', error);
-    return NextResponse.json({ error: 'Failed to fetch secretariats' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch secretariats' },
+      {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+          }, 
+      });
   } finally {
     await prisma.$disconnect();
   }

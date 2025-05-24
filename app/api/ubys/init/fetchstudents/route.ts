@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { students } from '../../_shared/students-data';
 import { transcripts } from '../../_shared/transcript-data';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // Get all students with grade 4 from transcripts
@@ -13,9 +16,23 @@ export async function GET() {
       .filter(student => grade4StudentIds.includes(student.studentId))
       .map(({ password, ...student }) => student);
     
-    return NextResponse.json(grade4Students, { status: 200 });
+    return NextResponse.json(grade4Students, 
+      { 
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
+      });
   } catch (error) {
     console.error('Error fetching students:', error);
-    return NextResponse.json({ message: 'Failed to fetch students' }, { status: 500 });
+    return NextResponse.json({ message: 'Failed to fetch students' }, 
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
+      });
   }
 } 

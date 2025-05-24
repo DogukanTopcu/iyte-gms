@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 const prisma = new PrismaClient();
 
 export async function POST() {
@@ -10,6 +12,7 @@ export async function POST() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Cache-Control': 'no-store',
             },
         });
 
@@ -41,10 +44,24 @@ export async function POST() {
             });
         }
         
-        return NextResponse.json({ message: 'Students created successfully' }, { status: 200 });
+        return NextResponse.json({ message: 'Students created successfully' }, 
+            { 
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-store',
+                },
+            });
     } catch (error) {
         console.error('Error creating students:', error);
-        return NextResponse.json({ error: 'Failed to create students' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to create students' }, 
+            {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-store',
+                },
+            });
     } finally {
         await prisma.$disconnect();
     }
@@ -58,10 +75,24 @@ export async function GET() {
                 Advisor: true,
             }
         });
-        return NextResponse.json(students, { status: 200 });
+        return NextResponse.json(students, 
+        { 
+            status: 200,
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-store',
+            },
+        });
     } catch (error) {
         console.error('Error fetching students:', error);
-        return NextResponse.json({ error: 'Failed to fetch students' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch students' }, 
+            { 
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-store',
+                },
+            });
     } finally {
         await prisma.$disconnect();
     }

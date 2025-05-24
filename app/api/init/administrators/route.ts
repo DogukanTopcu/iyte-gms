@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
 
 export async function POST() {
@@ -10,6 +13,7 @@ export async function POST() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Cache-Control': 'no-store',
             },
         });
 
@@ -35,10 +39,24 @@ export async function POST() {
             });
         }
         
-        return NextResponse.json({ message: 'Administrators created successfully' }, { status: 200 });
+        return NextResponse.json({ message: 'Administrators created successfully' }, 
+            {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-store',
+                },
+            });
     } catch (error) {
         console.error('Error creating administrators:', error);
-        return NextResponse.json({ error: 'Failed to create administrators' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to create administrators' }, 
+            {
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-store',
+                },
+            });
     } finally {
         await prisma.$disconnect();
     }
@@ -50,7 +68,15 @@ export async function GET() {
         return NextResponse.json(administrators, { status: 200 });
     } catch (error) {
         console.error('Error fetching administrators:', error);
-        return NextResponse.json({ error: 'Failed to fetch administrators' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to fetch administrators' },
+            { 
+                status: 500,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-store',
+                },
+            }
+        );
     } finally {
         await prisma.$disconnect();
     }
