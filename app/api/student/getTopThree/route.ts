@@ -1,139 +1,217 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient, Student } from '@prisma/client';
-import { transcripts as allMockTranscripts } from '../../ubys/_shared/transcript-data'; // Import mock transcript data
+import { GraduationStatusEnum, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-// Interface for Student data fetched from Prisma with its relations
-interface StudentWithPrismaDetails extends Student {
-  Department: {} | null;
-  Advisor: {} | null;
-  GraduationStatus: {} | null;
-  // studentId from Prisma's Student model will be used for matching
-}
-
-// Interface for students after their GPA and term have been attached from transcript
-interface StudentWithGpaAndTerm extends StudentWithPrismaDetails {
+interface StudentWithGpaAndTerm {
   gpa: number;  // GPA obtained from transcript
   term: number; // Term obtained from transcript
+  id: number;
+  name: string;
+  email: string;
+  studentId: number;
+  Department: {
+    id: number;
+    name: string;
+    Faculty: {
+      id: number;
+      name: string;
+    };
+  };
+  Advisor: {
+    id: number;
+    name: string;
+  };
+  GraduationStatus: {
+    studentId: number;
+    status: GraduationStatusEnum;
+  };
 }
+
+interface Student {
+  id: number;
+  name: string;
+  email: string;
+  studentId: number;
+  Department: {
+    id: number;
+    name: string;
+    Faculty: {
+      id: number;
+      name: string;
+    };
+  };
+  Advisor: {
+    id: number;
+    name: string;
+  };
+  GraduationStatus: {
+    studentId: number;
+    status: GraduationStatusEnum;
+  } | null;
+}
+
+interface TranscriptDetails {
+  studentId: number;
+  gpa: number;
+  term: number;
+}
+
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
-  const idParam = searchParams.get('userId');
+  const id = searchParams.get('userId');
   const role = searchParams.get('role');
-
-  if (!role) {
-    return NextResponse.json({ message: 'Role is required' }, { status: 400 });
-  }
-  if (!idParam && role !== 'student affairs') {
-    return NextResponse.json({ message: 'User ID is required for this role' }, { status: 400 });
+  
+  if (!id || !role) {
+    return NextResponse.json({ message: 'Students not found' }, { status: 404 });
   }
 
-  let parsedId: number | undefined = undefined;
-  if (idParam && role !== 'student affairs') {
-    parsedId = parseInt(idParam, 10);
-    if (isNaN(parsedId)) {
-      return NextResponse.json({ message: 'Invalid User ID format' }, { status: 400 });
-    }
-  }
 
-  try {
-    let relevantStudentsFromPrisma: StudentWithPrismaDetails[] = [];
+  const studentsWithGpaAndTerm = async (students : Student[]) : Promise<StudentWithGpaAndTerm[]> => {
+    const data = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ubys/transcripts/getTranscriptDetails`, {
+      method: 'POST',
+      body: JSON.stringify({
+        studentIds: students.map(student => student.studentId),
+      }),
+    });
+    const transcriptDetails : TranscriptDetails[] = await data.json();
+    const returnStudents = students.map(student => {
+      const details = transcriptDetails.find(detail => detail.studentId === student.studentId);
+      return { ...student, gpa: details!.gpa, term: details!.term, GraduationStatus: { studentId: student.studentId, status: student.GraduationStatus!.status } };
+    });
+    return returnStudents;
+  };
 
-    const studentInclude = {
-      Department: true,
-      Advisor: true,
-      GraduationStatus: true,
-    };
-
-    if (role === 'advisor') {
-      if (parsedId === undefined) return NextResponse.json({ message: 'User ID is required for advisor role' }, { status: 400 });
-      relevantStudentsFromPrisma = await prisma.student.findMany({
-        where: { advisorId: parsedId },
-        include: studentInclude,
-      }) as StudentWithPrismaDetails[];
-    } else if (role === 'department secretariat') {
-      if (parsedId === undefined) return NextResponse.json({ message: 'User ID is required for department secretariat role' }, { status: 400 });
-      relevantStudentsFromPrisma = await prisma.student.findMany({
-        where: { departmentId: parsedId },
-        include: studentInclude,
-      }) as StudentWithPrismaDetails[];
-    } else if (role === 'faculty secretariat') {
-      if (parsedId === undefined) return NextResponse.json({ message: 'User ID is required for faculty secretariat role' }, { status: 400 });
-      const departments = await prisma.department.findMany({
-        where: { facultyId: parsedId },
-        select: { id: true },
-      });
-      const departmentIds = departments.map((department) => department.id);
-
-      if (departmentIds.length === 0) return NextResponse.json([], { status: 200 });
-      relevantStudentsFromPrisma = await prisma.student.findMany({
-        where: { departmentId: { in: departmentIds } },
-        include: studentInclude,
-      }) as StudentWithPrismaDetails[];
-    } else if (role === 'student affairs') {
-      relevantStudentsFromPrisma = await prisma.student.findMany({
-        include: studentInclude,
-      }) as StudentWithPrismaDetails[];
-    } else {
-      return NextResponse.json({ message: 'Invalid role specified' }, { status: 400 });
-    }
-
-    if (relevantStudentsFromPrisma.length === 0) {
-      return NextResponse.json([], { status: 200 });
-    }
-
-    // Create a map of studentId to {gpa, term} from the mock transcript data, excluding term 10
-    const transcriptDetailsMap = new Map<number, { gpa: number, term: number }>();
-    allMockTranscripts.forEach(transcript => {
-      // Ensure studentId, gpa, and term are valid, gpa and term are numbers, and term is not 10
-      if (transcript.studentId &&
-          typeof transcript.gpa === 'number' &&
-          typeof transcript.term === 'number' &&
-          transcript.term !== 10) {
-        transcriptDetailsMap.set(transcript.studentId, { gpa: transcript.gpa, term: transcript.term });
+  const sortStudents = async (students : StudentWithGpaAndTerm[]) => {
+    // Sort students by gpo
+    /**
+     * For two equal gpa, the number of terms is considered. 
+     * The one with lower term is bigger.
+     */
+    const sortedStudentsByGpa = students.sort((a, b) => {
+      if (b.gpa === a.gpa) {
+        return a.term - b.term;
       }
+      return b.gpa - a.gpa;
     });
 
-    // Augment students with GPA and term from transcripts and filter out those without valid data
-    const studentsWithDetails: StudentWithGpaAndTerm[] = relevantStudentsFromPrisma
-      .map(student => {
-        const details = transcriptDetailsMap.get(student.studentId);
-        return { ...student, gpa: details?.gpa, term: details?.term };
-      })
-      .filter(student => typeof student.gpa === 'number' && typeof student.term === 'number') as StudentWithGpaAndTerm[];
-
-    if (studentsWithDetails.length === 0) {
-      return NextResponse.json([], { status: 200 }); // No students with valid GPAs and terms from transcripts
-    }
-
-    const gpas = studentsWithDetails.map(student => student.gpa);
-    const uniqueSortedGpas = Array.from(new Set(gpas)).sort((a, b) => b - a);
-    const topGpaTiers = uniqueSortedGpas.slice(0, 3);
-
-    if (topGpaTiers.length === 0) {
-      return NextResponse.json([], { status: 200 });
-    }
-
-    let topStudents = studentsWithDetails.filter(student =>
-      topGpaTiers.includes(student.gpa)
-    );
-
-    // Sort the final list: primary sort by term (ascending), secondary sort by GPA (descending)
-    topStudents.sort((a, b) => {
-      if (a.term !== b.term) {
-        return a.term - b.term; // Ascending by term
+    // Sort students by term
+    /**
+     * The ones with a term of 8 and less than 8 are ranked in the same category. 
+     * Those with more than 8 are left behind in the ranking
+     */
+    const sortedStudentsByTerm = sortedStudentsByGpa.sort((a, b) => {
+      if (a.term <= 8 && b.term <= 8) {
+        return 1;
+      } else if (a.term <= 8) {
+        return -1;
+      } else if (b.term <= 8) {
+        return 1;
       }
-      return b.gpa - a.gpa; // Descending by GPA for same term
+      return a.term - b.term;
     });
 
-    return NextResponse.json(topStudents, { status: 200 });
+    // Sort students by graduation status
+    /**
+     * The ones with a graduation status of COMPLETED are ranked first.
+     * The ones with a graduation status of FACULTY_SECRETARIAT_APPROVAL are ranked second.
+     * The ones with a graduation status of DEPARTMENT_SECRETARIAT_APPROVAL are ranked third.
+     * The ones with a graduation status of ADVISOR_APPROVAL are ranked fourth.
+     * The ones with a graduation status of SYSTEM_APPROVAL are ranked fifth.
+     */
+    const graduationStatusOrder = [
+      'COMPLETED',
+      'FACULTY_SECRETARIAT_APPROVAL',
+      'DEPARTMENT_SECRETARIAT_APPROVAL',
+      'ADVISOR_APPROVAL',
+      'SYSTEM_APPROVAL'
+    ];
 
-  } catch (error) {
-    console.error("Error in /api/student/getTopThree:", error);
-    return NextResponse.json({ message: 'Internal Server Error', details: (error as Error).message }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
+    const sortedStudentsByGraduationStatus = sortedStudentsByTerm.sort((a, b) => {
+      return graduationStatusOrder.indexOf(a.GraduationStatus!.status) - graduationStatusOrder.indexOf(b.GraduationStatus!.status);
+    });
+
+    return sortedStudentsByGraduationStatus;
   }
+
+  if (role === 'department secretariat') {
+    const students = await prisma.student.findMany({
+      where: { departmentId: parseInt(id) },
+      include: {
+        Department: {
+          include: {
+            Faculty: true,
+          },
+        },
+        Advisor: true,
+        GraduationStatus: {
+          select: {
+            studentId: true,
+            status: true,
+          }
+        },
+      },
+    });
+    
+    const studentsData = await studentsWithGpaAndTerm(students);
+    const sortedStudents = await sortStudents(studentsData);
+
+    return NextResponse.json(sortedStudents.slice(0, 3), { status: 200 });
+
+  }else if (role === 'faculty secretariat') {
+    const departments = await prisma.department.findMany({
+      where: { facultyId: parseInt(id) },
+      select: { id: true },
+    });
+    const departmentIds = departments.map((department) => department.id);
+    const students = await prisma.student.findMany({
+      where: { 
+        departmentId: { in: departmentIds },
+      },
+      include: {
+        Department: {
+          include: {
+            Faculty: true,
+          },
+        },
+        Advisor: true,
+        GraduationStatus: {
+          select: {
+            studentId: true,
+            status: true,
+          }
+        },
+      },
+    });
+
+    const studentsData = await studentsWithGpaAndTerm(students);
+    const sortedStudents = await sortStudents(studentsData);
+
+    return NextResponse.json(sortedStudents.slice(0, 3), { status: 200 });
+  }else if (role === 'student affairs') {
+    const students = await prisma.student.findMany({
+      include: {
+        Department: {
+          include: {
+            Faculty: true,
+          },
+        },
+        Advisor: true,
+        GraduationStatus: {
+          select: {
+            studentId: true,
+            status: true,
+          }
+        },
+      },
+    });
+
+    const studentsData = await studentsWithGpaAndTerm(students);
+    const sortedStudents = await sortStudents(studentsData);
+
+    return NextResponse.json(sortedStudents.slice(0, 3), { status: 200 });
+  }
+
+  return NextResponse.json({ message: 'Invalid request' }, { status: 400 });
 }

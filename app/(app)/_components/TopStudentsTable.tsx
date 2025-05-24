@@ -18,6 +18,8 @@ interface Faculty {
 }
 
 interface Student {
+  gpa: number;
+  term: number;
   id: number;
   studentId: number;
   name: string;
@@ -67,17 +69,17 @@ const TopStudentsTable = ({
             try {
                 let url;
                 if (isUniversityWide) {
-                    url = '/api/student/getTopThree?role=student affairs';
+                    url = '/api/student/getTopThree?userId=0&role=student affairs';
                 } else if (showSelectedFaculty && departmentId) {
-                    url = `/api/student/getTopThree?role=faculty secretariat&userId=${departmentId}`;
+                    url = `/api/student/getTopThree?userId=${departmentId}&role=faculty secretariat`;
                 } else if (showSelectedDepartment && departmentId) {
-                    url = `/api/student/getTopThree?role=department secretariat&userId=${departmentId}`;
+                    url = `/api/student/getTopThree?userId=${departmentId}&role=department secretariat`;
                 } else if (isFacultyLevel && departmentId) {
-                    url = `/api/student/getTopThree?role=faculty secretariat&userId=${departmentId}`;
+                    url = `/api/student/getTopThree?userId=${departmentId}&role=faculty secretariat`;
                 } else if (departmentId) {
-                    url = `/api/student/getTopThree?role=department secretariat&userId=${departmentId}`;
+                    url = `/api/student/getTopThree?userId=${departmentId}&role=department secretariat`;
                 } else {
-                    url = '/api/student/getTopThree?role=student affairs';
+                    url = '/api/student/getTopThree?userId=0&role=student affairs';
                 }
                 
                 const response = await fetch(url);
@@ -98,7 +100,7 @@ const TopStudentsTable = ({
         if (showSelectedFaculty && selectedFacultyName) return `Top Three Students - ${selectedFacultyName}`;
         if (showSelectedDepartment && selectedDepartmentName) return `Top Three Students - ${selectedDepartmentName}`;
         if (isFacultyLevel) return 'Top Three Students (Faculty Level)';
-        return 'Top Three Students (Department Level)';
+        return `Top Three Students (${students.length > 0 ? students[0]?.Department.name : 'N/A'})`;
     };
 
     const renderStudentRow = (student: Student, index: number, rankOffset: number = 0) => (
@@ -115,8 +117,9 @@ const TopStudentsTable = ({
             <TableCell>{student.studentId}</TableCell>
             <TableCell>{student.name}</TableCell>
             <TableCell>{student.email}</TableCell>
-            <TableCell>{student.Department.name}</TableCell>
             <TableCell>{student.Advisor.name}</TableCell>
+            <TableCell>{student.gpa}</TableCell>
+            <TableCell>{student.term}</TableCell>
             <TableCell>
                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusName.find((status) => status.status === student.GraduationStatus.status)?.color}`}>
                     {statusName.find((status) => status.status === student.GraduationStatus.status)?.name}
@@ -152,8 +155,9 @@ const TopStudentsTable = ({
                                     <TableCell>ID</TableCell>
                                     <TableCell>Name</TableCell>
                                     <TableCell>Email</TableCell>
-                                    <TableCell>Department</TableCell>
                                     <TableCell>Advisor</TableCell>
+                                    <TableCell>GPA</TableCell>
+                                    <TableCell>Term</TableCell>
                                     <TableCell>Status</TableCell>
                                     <TableCell>Transcript</TableCell>
                                 </TableRow>
