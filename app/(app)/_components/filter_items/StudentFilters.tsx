@@ -175,16 +175,18 @@ export default function StudentFilters({
       label: 'Faculty',
       options: facultyOptions,
     }] : []),
-    {
+    // Only include department filter if role is not 'advisor'
+    ...(role !== 'advisor' ? [{
       id: 'department',
       label: 'Department',
       options: getDepartmentOptions(),
-    },
-    {
+    }] : []),
+    // Only include advisor filter if role is not 'advisor'
+    ...(role !== 'advisor' ? [{
       id: 'advisor',
       label: 'Advisor',
       options: getAdvisorOptions(),
-    },
+    }] : []),
     {
       id: 'status',
       label: 'Status',
@@ -196,15 +198,18 @@ export default function StudentFilters({
     let newFilters = { ...activeFilters, [filterId]: value };
     
     // Implement cascading logic: clear child filters when parent changes
-    if (filterId === 'faculty') {
-      // When faculty changes, clear department and advisor
-      newFilters.department = null;
-      newFilters.advisor = null;
-    } else if (filterId === 'department') {
-      // When department changes, clear advisor
-      newFilters.advisor = null;
+    // Only apply cascading for non-advisor roles since advisor role doesn't have department/advisor filters
+    if (role !== 'advisor') {
+      if (filterId === 'faculty') {
+        // When faculty changes, clear department and advisor
+        newFilters.department = null;
+        newFilters.advisor = null;
+      } else if (filterId === 'department') {
+        // When department changes, clear advisor
+        newFilters.advisor = null;
+      }
+      // When advisor changes, no need to clear anything (it's the leaf node)
     }
-    // When advisor changes, no need to clear anything (it's the leaf node)
     
     setActiveFilters(newFilters);
     
