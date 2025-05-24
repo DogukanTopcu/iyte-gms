@@ -43,6 +43,8 @@ model Diploma {
   issueDate DateTime
   studentId Int      @id
   Student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([studentId])
 }
 
 model Admin {
