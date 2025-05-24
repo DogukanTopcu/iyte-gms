@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
+export const runtime = 'nodejs';
+
 const prisma = new PrismaClient();
 
 export async function GET() {
@@ -12,7 +14,13 @@ export async function GET() {
       },
     });
     console.log(`Found ${departments.length} departments in database`);
-    return NextResponse.json(departments, { status: 200 });
+    return new NextResponse(JSON.stringify(departments), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+      },
+    });
   } catch (error) {
     console.error('Error fetching departments:', error);
     return NextResponse.json({ error: 'Failed to fetch departments' }, { status: 500 });
