@@ -296,7 +296,7 @@ const InitStudent = () => {
 
         departments: departments || []
       });
-      if (departments.length > 0 && faculties.length > 0) {
+      if (departments.length > 0 && faculties.length > 0 && maxStep == 1) {
         setMaxStep(2);
       }
     } catch (error) {
@@ -320,7 +320,7 @@ const InitStudent = () => {
         deptSecretariats: data.deptSecretariatsWithDepartment,
         facultySecretariats: data.facultySecretariatsWithFaculty
       });
-      if (data.deptSecretariatsWithDepartment.length > 0 && data.facultySecretariatsWithFaculty.length > 0) {
+      if (data.deptSecretariatsWithDepartment.length > 0 && data.facultySecretariatsWithFaculty.length > 0 && maxStep == 2) {
         setMaxStep(3);
       }
     } catch (error) {
@@ -341,7 +341,7 @@ const InitStudent = () => {
       });
       const data = await response.json();
       setAdvisorsData(data as AdvisorsData[]);
-      if (data.length > 0) {
+      if (data.length > 0 && maxStep == 3) {
         setMaxStep(4);
       }
     } catch (error) {
@@ -362,7 +362,7 @@ const InitStudent = () => {
       });
       const data = await response.json();
       setStudentsData(data);
-      if (data.length > 0) {
+      if (data.length > 0 && maxStep == 4) {
         setMaxStep(4);
       }
     } catch (error) {
