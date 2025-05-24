@@ -37,9 +37,57 @@ interface Student {
     name: string;
   };
   GraduationStatus: {
-    status: string;
+    status: string; // Matches GraduationStatusEnum from backend
   };
 }
+
+interface StudentWithRank extends Student {
+  rank: number;
+}
+
+// Order for graduation status, lower index is better
+const graduationStatusOrder = [
+  'COMPLETED',
+  'FACULTY_SECRETARIAT_APPROVAL',
+  'DEPARTMENT_SECRETARIAT_APPROVAL',
+  'ADVISOR_APPROVAL',
+  'SYSTEM_APPROVAL'
+];
+
+// Comparison function to determine if two students have the same rank
+const compareStudentsForRankDisplay = (a: Student, b: Student): number => {
+  // 1. Compare by Graduation Status
+  const statusA = graduationStatusOrder.indexOf(a.GraduationStatus.status);
+  const statusB = graduationStatusOrder.indexOf(b.GraduationStatus.status);
+  if (statusA !== statusB) return statusA - statusB;
+
+  // 2. Term category (term <= 8 is better)
+  const termCategoryA = a.term <= 8 ? 1 : 2;
+  const termCategoryB = b.term <= 8 ? 1 : 2;
+  if (termCategoryA !== termCategoryB) return termCategoryA - termCategoryB;
+
+  // 3. If both are in Category 2 (term > 8), lower term is better
+  if (termCategoryA === 2) { // (implies termCategoryB is also 2)
+    if (a.term !== b.term) {
+      return a.term - b.term; // Lower term comes first
+    }
+  }
+  // If both are in Category 1 (term <= 8), or both in Category 2 with the same term,
+  // their relative order is determined by GPA logic.
+
+  // 4. Compare by GPA: Higher GPA is better
+  if (a.gpa !== b.gpa) {
+    return b.gpa - a.gpa; // Higher GPA comes first (b - a for descending)
+  }
+
+  // 5. GPAs are equal, compare by term (as a tie-breaker for GPA): Lower term is better
+  if (a.term !== b.term) {
+    return a.term - b.term; // Lower term comes first
+  }
+
+  return 0; // Students are equivalent for ranking
+};
+
 
 const TopStudentsTable = ({ 
   departmentId,
@@ -59,7 +107,7 @@ const TopStudentsTable = ({
   selectedDepartmentName?: string;
 }) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [students, setStudents] = useState<Student[]>([]);
+    const [studentsWithRanks, setStudentsWithRanks] = useState<StudentWithRank[]>([]);
 
     const router = useRouter();
 
@@ -83,11 +131,27 @@ const TopStudentsTable = ({
                 }
                 
                 const response = await fetch(url);
-                const data = await response.json();
-                setStudents(data);
+                const fetchedStudents: Student[] = await response.json();
+                
+                if (fetchedStudents.length > 0) {
+                    const rankedStudents: StudentWithRank[] = [];
+                    let currentRankDisplay = 1;
+                    for (let i = 0; i < fetchedStudents.length; i++) {
+                        const student = fetchedStudents[i];
+                        if (i > 0 && compareStudentsForRankDisplay(student, fetchedStudents[i-1]) !== 0) {
+                            // Not tied with the previous student, so increment rank
+                            currentRankDisplay++;
+                        }
+                        rankedStudents.push({ ...student, rank: currentRankDisplay });
+                    }
+                    setStudentsWithRanks(rankedStudents);
+                } else {
+                    setStudentsWithRanks([]);
+                }
+
             } catch (error) {
                 console.error('Error fetching top students:', error);
-                setStudents([]);
+                setStudentsWithRanks([]);
             } finally {
                 setIsLoading(false);
             }
@@ -96,38 +160,39 @@ const TopStudentsTable = ({
     }, [departmentId, isFacultyLevel, isUniversityWide, showSelectedFaculty, showSelectedDepartment]);
     
     const getTableTitle = () => {
-        if (isUniversityWide) return 'Top Three Students (University-Wide)';
-        if (showSelectedFaculty && selectedFacultyName) return `Top Three Students - ${selectedFacultyName}`;
-        if (showSelectedDepartment && selectedDepartmentName) return `Top Three Students - ${selectedDepartmentName}`;
-        if (isFacultyLevel) return 'Top Three Students (Faculty Level)';
-        return `Top Three Students (${students.length > 0 ? students[0]?.Department.name : 'N/A'})`;
+        if (isUniversityWide) return 'Top Students (University-Wide)';
+        if (showSelectedFaculty && selectedFacultyName) return `Top Students - ${selectedFacultyName}`;
+        if (showSelectedDepartment && selectedDepartmentName) return `Top Students - ${selectedDepartmentName}`;
+        if (isFacultyLevel) return 'Top Students (Faculty Level)';
+        return `Top Students (${studentsWithRanks.length > 0 ? studentsWithRanks[0]?.Department.name : 'N/A'})`;
     };
 
-    const renderStudentRow = (student: Student, index: number, rankOffset: number = 0) => (
-        <TableRow key={`${student.id}-${rankOffset}`}>
+    const renderStudentRow = (studentWithRank: StudentWithRank) => (
+        <TableRow key={studentWithRank.id}>
             <TableCell>
                 <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    (index + rankOffset) === 0 ? 'bg-yellow-100 text-yellow-800' :
-                    (index + rankOffset) === 1 ? 'bg-gray-100 text-gray-800' :
-                    'bg-orange-100 text-orange-800'
+                    studentWithRank.rank === 1 ? 'bg-yellow-100 text-yellow-800' : // Gold
+                    studentWithRank.rank === 2 ? 'bg-gray-100 text-gray-800' :    // Silver
+                    studentWithRank.rank === 3 ? 'bg-orange-100 text-orange-800' : // Bronze
+                    'bg-blue-100 text-blue-800' // Default for other ranks
                 }`}>
-                    #{index + rankOffset + 1}
+                    #{studentWithRank.rank}
                 </div>
             </TableCell>
-            <TableCell>{student.studentId}</TableCell>
-            <TableCell>{student.name}</TableCell>
-            <TableCell>{student.email}</TableCell>
-            <TableCell>{student.Advisor.name}</TableCell>
-            <TableCell>{student.gpa}</TableCell>
-            <TableCell>{student.term}</TableCell>
+            <TableCell>{studentWithRank.studentId}</TableCell>
+            <TableCell>{studentWithRank.name}</TableCell>
+            <TableCell>{studentWithRank.email}</TableCell>
+            <TableCell>{studentWithRank.Advisor.name}</TableCell>
+            <TableCell>{studentWithRank.gpa}</TableCell>
+            <TableCell>{studentWithRank.term}</TableCell>
             <TableCell>
-                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusName.find((status) => status.status === student.GraduationStatus.status)?.color}`}>
-                    {statusName.find((status) => status.status === student.GraduationStatus.status)?.name}
+                <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusName.find((status) => status.status === studentWithRank.GraduationStatus.status)?.color}`}>
+                    {statusName.find((status) => status.status === studentWithRank.GraduationStatus.status)?.name}
                 </div>
             </TableCell>
             <TableCell>
                 <button 
-                    onClick={() => router.push(`/transcript/${student.studentId}`)} 
+                    onClick={() => router.push(`/transcript/${studentWithRank.studentId}`)} 
                     className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
                 >
                     Transcript
@@ -163,11 +228,11 @@ const TopStudentsTable = ({
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {students.length > 0 ? (
-                                    students.map((student, index) => renderStudentRow(student, index))
+                                {studentsWithRanks.length > 0 ? (
+                                    studentsWithRanks.map((studentWithRank) => renderStudentRow(studentWithRank))
                                 ) : (
                                     <TableRow>
-                                        <TableCell colSpan={8} align="center">No students available</TableCell>
+                                        <TableCell colSpan={9} align="center">No students available</TableCell> {/* Updated colSpan to 9 */}
                                     </TableRow>
                                 )}
                             </TableBody>
@@ -179,4 +244,4 @@ const TopStudentsTable = ({
     )
 }
 
-export default TopStudentsTable 
+export default TopStudentsTable

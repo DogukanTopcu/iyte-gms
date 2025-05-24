@@ -62,11 +62,57 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const id = searchParams.get('userId');
   const role = searchParams.get('role');
-  
+
   if (!id || !role) {
     return NextResponse.json({ message: 'Students not found' }, { status: 404 });
   }
 
+  const graduationStatusOrder = [
+    'COMPLETED',
+    'FACULTY_SECRETARIAT_APPROVAL',
+    'DEPARTMENT_SECRETARIAT_APPROVAL',
+    'ADVISOR_APPROVAL',
+    'SYSTEM_APPROVAL'
+  ];
+
+  const compareStudentsForFinalRanking = (a: StudentWithGpaAndTerm, b: StudentWithGpaAndTerm): number => {
+    // 1. Compare by Graduation Status
+    const statusA = graduationStatusOrder.indexOf(a.GraduationStatus.status);
+    const statusB = graduationStatusOrder.indexOf(b.GraduationStatus.status);
+    if (statusA !== statusB) {
+      return statusA - statusB; // Lower index (better status) comes first
+    }
+
+    // Statuses are equal, compare by Term logic
+    // term <= 8 is one category, term > 8 is another. term <= 8 is better.
+    const termCategoryA = a.term <= 8 ? 1 : 2;
+    const termCategoryB = b.term <= 8 ? 1 : 2;
+
+    if (termCategoryA !== termCategoryB) {
+      return termCategoryA - termCategoryB; // Category 1 (term <= 8) comes before Category 2 (term > 8)
+    }
+
+    // If both are in Category 2 (term > 8), lower term is better
+    if (termCategoryA === 2) { // (implies termCategoryB is also 2)
+      if (a.term !== b.term) {
+        return a.term - b.term; // Lower term comes first
+      }
+    }
+    // If both are in Category 1 (term <= 8), or both in Category 2 with the same term,
+    // their relative order is determined by GPA logic.
+
+    // Compare by GPA: Higher GPA is better
+    if (a.gpa !== b.gpa) {
+      return b.gpa - a.gpa; // Higher GPA comes first (b - a for descending)
+    }
+
+    // GPAs are equal, compare by term (as a tie-breaker for GPA): Lower term is better
+    if (a.term !== b.term) {
+      return a.term - b.term; // Lower term comes first
+    }
+
+    return 0; // Students are equivalent for ranking
+  };
 
   const studentsWithGpaAndTerm = async (students : Student[]) : Promise<StudentWithGpaAndTerm[]> => {
     const data = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/ubys/transcripts/getTranscriptDetails`, {
@@ -78,62 +124,50 @@ export async function GET(req: NextRequest) {
     const transcriptDetails : TranscriptDetails[] = await data.json();
     const returnStudents = students.map(student => {
       const details = transcriptDetails.find(detail => detail.studentId === student.studentId);
-      return { ...student, gpa: details!.gpa, term: details!.term, GraduationStatus: { studentId: student.studentId, status: student.GraduationStatus!.status } };
+      // Ensure GraduationStatus and its status property are not null before accessing
+      const status = student.GraduationStatus ? student.GraduationStatus.status : 'SYSTEM_APPROVAL'; // Default or handle as error
+      const studentIdForGradStatus = student.GraduationStatus ? student.GraduationStatus.studentId : student.studentId;
+
+      return { 
+        ...student, 
+        gpa: details!.gpa, 
+        term: details!.term, 
+        GraduationStatus: { studentId: studentIdForGradStatus, status: status } 
+      };
     });
     return returnStudents;
   };
 
-  const sortStudents = async (students : StudentWithGpaAndTerm[]) => {
-    // Sort students by gpo
-    /**
-     * For two equal gpa, the number of terms is considered. 
-     * The one with lower term is bigger.
-     */
-    const sortedStudentsByGpa = students.sort((a, b) => {
-      if (b.gpa === a.gpa) {
-        return a.term - b.term;
+  const sortStudents = async (studentsToSort : StudentWithGpaAndTerm[]) => {
+    // The sort function should align with compareStudentsForFinalRanking
+    // For simplicity, we'll use the compareStudentsForFinalRanking directly.
+    // Create a mutable copy for sorting
+    const mutableStudents = [...studentsToSort];
+    mutableStudents.sort(compareStudentsForFinalRanking);
+    return mutableStudents;
+  };
+
+  const getTopThreeWithTies = (sortedStudents: StudentWithGpaAndTerm[]): StudentWithGpaAndTerm[] => {
+    if (sortedStudents.length === 0) {
+      return [];
+    }
+    if (sortedStudents.length <= 3) {
+      return sortedStudents;
+    }
+
+    const thirdRankDefiningStudent = sortedStudents[2];
+    const topStudentsResult = [];
+    for (const student of sortedStudents) {
+      // Include student if they are better than or equal to the 3rd rank defining student
+      if (compareStudentsForFinalRanking(student, thirdRankDefiningStudent) <= 0) {
+        topStudentsResult.push(student);
+      } else {
+        // Students are sorted, so once we find one worse than the 3rd, the rest will also be worse
+        break;
       }
-      return b.gpa - a.gpa;
-    });
-
-    // Sort students by term
-    /**
-     * The ones with a term of 8 and less than 8 are ranked in the same category. 
-     * Those with more than 8 are left behind in the ranking
-     */
-    const sortedStudentsByTerm = sortedStudentsByGpa.sort((a, b) => {
-      if (a.term <= 8 && b.term <= 8) {
-        return 1;
-      } else if (a.term <= 8) {
-        return -1;
-      } else if (b.term <= 8) {
-        return 1;
-      }
-      return a.term - b.term;
-    });
-
-    // Sort students by graduation status
-    /**
-     * The ones with a graduation status of COMPLETED are ranked first.
-     * The ones with a graduation status of FACULTY_SECRETARIAT_APPROVAL are ranked second.
-     * The ones with a graduation status of DEPARTMENT_SECRETARIAT_APPROVAL are ranked third.
-     * The ones with a graduation status of ADVISOR_APPROVAL are ranked fourth.
-     * The ones with a graduation status of SYSTEM_APPROVAL are ranked fifth.
-     */
-    const graduationStatusOrder = [
-      'COMPLETED',
-      'FACULTY_SECRETARIAT_APPROVAL',
-      'DEPARTMENT_SECRETARIAT_APPROVAL',
-      'ADVISOR_APPROVAL',
-      'SYSTEM_APPROVAL'
-    ];
-
-    const sortedStudentsByGraduationStatus = sortedStudentsByTerm.sort((a, b) => {
-      return graduationStatusOrder.indexOf(a.GraduationStatus!.status) - graduationStatusOrder.indexOf(b.GraduationStatus!.status);
-    });
-
-    return sortedStudentsByGraduationStatus;
-  }
+    }
+    return topStudentsResult;
+  };
 
   if (role === 'department secretariat') {
     const students = await prisma.student.findMany({
@@ -155,10 +189,10 @@ export async function GET(req: NextRequest) {
     });
     
     const studentsData = await studentsWithGpaAndTerm(students);
-    const filteredStudentsData = studentsData.filter(student => student.term !== 10);
-    const sortedStudents = await sortStudents(filteredStudentsData);
+    const sortedStudents = await sortStudents(studentsData);
+    const topThreeStudents = getTopThreeWithTies(sortedStudents);
 
-    return NextResponse.json(sortedStudents.slice(0, 3), { status: 200 });
+    return NextResponse.json(topThreeStudents, { status: 200 });
 
   }else if (role === 'faculty secretariat') {
     const departments = await prisma.department.findMany({
@@ -187,10 +221,10 @@ export async function GET(req: NextRequest) {
     });
 
     const studentsData = await studentsWithGpaAndTerm(students);
-    const filteredStudentsData = studentsData.filter(student => student.term !== 10);
-    const sortedStudents = await sortStudents(filteredStudentsData);
+    const sortedStudents = await sortStudents(studentsData);
+    const topThreeStudents = getTopThreeWithTies(sortedStudents);
 
-    return NextResponse.json(sortedStudents.slice(0, 3), { status: 200 });
+    return NextResponse.json(topThreeStudents, { status: 200 });
   }else if (role === 'student affairs') {
     const students = await prisma.student.findMany({
       include: {
@@ -210,10 +244,10 @@ export async function GET(req: NextRequest) {
     });
 
     const studentsData = await studentsWithGpaAndTerm(students);
-    const filteredStudentsData = studentsData.filter(student => student.term !== 10);
-    const sortedStudents = await sortStudents(filteredStudentsData);
+    const sortedStudents = await sortStudents(studentsData);
+    const topThreeStudents = getTopThreeWithTies(sortedStudents);
 
-    return NextResponse.json(sortedStudents.slice(0, 3), { status: 200 });
+    return NextResponse.json(topThreeStudents, { status: 200 });
   }
 
   return NextResponse.json({ message: 'Invalid request' }, { status: 400 });
