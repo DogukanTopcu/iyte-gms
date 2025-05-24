@@ -292,9 +292,8 @@ const InitStudent = () => {
 
       // Update the institution data state
       setInstitutionData({
-        faculties: faculties || [],
-
-        departments: departments || []
+        faculties: faculties,
+        departments: departments
       });
       if (departments.length > 0 && faculties.length > 0) {
         setMaxStep(2);
