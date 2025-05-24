@@ -3,8 +3,10 @@ import React, { useEffect, useState } from 'react'
 import { TranscriptViewCard } from '../../_components/TranscriptViewCard'
 import { Student } from '@prisma/client';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 const StudentTranscriptPage = ({ params }: { params: { id: string } }) => {
+  const router = useRouter();
   const { id } = params;
   const [student, setStudent] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -67,8 +69,25 @@ const StudentTranscriptPage = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      <button
+        onClick={() => router.back()}
+        className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-all duration-200 mb-2 group"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5 transition-transform duration-200 group-hover:-translate-x-1"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        </svg>
+        Go Back
+      </button>
       <h1 className="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+
         <span className="bg-red-800 text-white p-1 rounded-md mr-2">
+          
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
