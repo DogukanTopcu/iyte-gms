@@ -166,6 +166,13 @@ const TopStudentsTable = ({
         if (isFacultyLevel) return 'Top Students (Faculty Level)';
         return `Top Students (${studentsWithRanks.length > 0 ? studentsWithRanks[0]?.Department.name : 'N/A'})`;
     };
+    const getTableDescription = () => {
+        if (isUniversityWide) return 'This table displays the top three performing students across different levels: university-wide, by selected faculty, and by selected department.';
+        if (showSelectedFaculty && selectedFacultyName) return `This table displays the top three performing students by ${selectedFacultyName}.`;
+        if (showSelectedDepartment && selectedDepartmentName) return ` Students who will get "Berat" Certificate at ${selectedDepartmentName} department`;
+        if (isFacultyLevel) return 'This table displays the top three performing students by faculty level.';
+        return `This table displays the students who will get "Berat" certificate `;
+    };
 
     const renderStudentRow = (studentWithRank: StudentWithRank) => (
         <TableRow key={studentWithRank.id}>
@@ -211,6 +218,9 @@ const TopStudentsTable = ({
                 <>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         {getTableTitle()}
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 2 }}>
+                        {getTableDescription()}
                     </Typography>
                     <TableContainer component={Paper}>
                         <Table>
