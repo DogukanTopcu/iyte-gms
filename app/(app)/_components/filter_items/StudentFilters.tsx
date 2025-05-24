@@ -175,13 +175,13 @@ export default function StudentFilters({
       label: 'Faculty',
       options: facultyOptions,
     }] : []),
-    // Only include department filter if role is not 'advisor'
-    ...(role !== 'advisor' ? [{
+    // Only include department filter if role is not 'advisor' and not 'department secretariat'
+    ...(role !== 'advisor' && role !== 'department secretariat' ? [{
       id: 'department',
       label: 'Department',
       options: getDepartmentOptions(),
     }] : []),
-    // Only include advisor filter if role is not 'advisor'
+    // Only include advisor filter if role is not 'advisor' and not 'department secretariat'
     ...(role !== 'advisor' ? [{
       id: 'advisor',
       label: 'Advisor',

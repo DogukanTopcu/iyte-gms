@@ -129,7 +129,7 @@ export default function Dashboard() {
               
               <TableToggleSwitch 
                 onToggle={handleToggleView}
-                initialView={currentView as 'students' | 'advisors'}
+                initialView={currentView as 'advisors' | 'students'}
               />
               
               {showStudentsTable ? (
@@ -143,7 +143,11 @@ export default function Dashboard() {
                 </>
               ) : (
                 <>
-                  <AdvisorFilters onFilterChange={setAdvisorFilters} />
+                  <AdvisorFilters 
+                    onFilterChange={setAdvisorFilters} 
+                    userId={user?.departmentId || 0}
+                    role="department secretariat"
+                  />
                   <AdvisorListTable userId={user?.departmentId || 0} role="department secretariat" filters={advisorFilters} />
                 </>
               )}
@@ -187,6 +191,8 @@ export default function Dashboard() {
                         }));
                       }}
                       cascadingFilters={cascadingFilters}
+                      userId={user?.facultyId || 0}
+                      role="faculty secretariat"
                     />
                     <AdvisorListTable userId={user?.facultyId || 0} role="faculty secretariat" filters={getAdvisorFiltersFromCascading()} />
                   </>
@@ -260,6 +266,8 @@ export default function Dashboard() {
                         }));
                       }}
                       cascadingFilters={cascadingFilters}
+                      userId={user?.id || 0}
+                      role="student affairs"
                     />
                     <AdvisorListTable userId={user?.facultyId || 0} role="student affairs" filters={getAdvisorFiltersFromCascading()} />
                   </>

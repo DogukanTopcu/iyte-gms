@@ -38,6 +38,10 @@ export default function AdvisorFilters({
   const [fetchedDepartments, setFetchedDepartments] = useState<Department[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Determine what filters to show based on role
+  const shouldShowFacultyFilter = role !== 'faculty secretariat' && role !== 'department secretariat' && !hideFacultyFilter;
+  const shouldShowDepartmentFilter = role !== 'department secretariat';
+
   // Update local state when cascading filters change
   useEffect(() => {
     if (cascadingFilters) {
@@ -51,7 +55,7 @@ export default function AdvisorFilters({
 
   // Fetch departments based on userId and role when hideFacultyFilter is true (faculty secretariat)
   useEffect(() => {
-    if (hideFacultyFilter && userId && role) {
+    if ((role === 'faculty secretariat' || hideFacultyFilter) && userId && role) {
       setIsLoading(true);
       const fetchDepartments = async () => {
         try {
@@ -79,7 +83,7 @@ export default function AdvisorFilters({
 
   // Create department options - filter by faculty if selected
   const getDepartmentOptions = () => {
-    let departmentData = hideFacultyFilter && fetchedDepartments.length > 0 
+    let departmentData = (role === 'faculty secretariat' || hideFacultyFilter) && fetchedDepartments.length > 0 
       ? fetchedDepartments 
       : departments;
 
@@ -103,17 +107,18 @@ export default function AdvisorFilters({
   }));
 
   const filters: FilterConfig[] = [
-    // Only include faculty filter if hideFacultyFilter is false
-    ...(hideFacultyFilter ? [] : [{
+    // Only include faculty filter if role allows it
+    ...(shouldShowFacultyFilter ? [{
       id: 'faculty',
       label: 'Faculty',
       options: facultyOptions,
-    }]),
-    {
+    }] : []),
+    // Only include department filter if role allows it
+    ...(shouldShowDepartmentFilter ? [{
       id: 'department',
       label: 'Department',
       options: getDepartmentOptions(),
-    },
+    }] : []),
   ];
 
   const handleFilterChange = (filterId: string, value: string | null) => {
