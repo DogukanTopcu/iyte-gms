@@ -158,12 +158,12 @@ const InitStudent = () => {
   const handleNextStep = () => {
     if (currentStep < steps.length && currentStep < maxStep) {
       setCurrentStep(currentStep + 1);
-      setSteps(steps.map(step => 
-        step.id === currentStep 
+      setSteps(steps.map(step =>
+        step.id === currentStep
           ? { ...step, status: 'completed' }
           : step.id === currentStep + 1
-          ? { ...step, status: 'in-progress' }
-          : step
+            ? { ...step, status: 'in-progress' }
+            : step
       ));
     }
   };
@@ -171,12 +171,12 @@ const InitStudent = () => {
   const handlePreviousStep = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-      setSteps(steps.map(step => 
-        step.id === currentStep 
+      setSteps(steps.map(step =>
+        step.id === currentStep
           ? { ...step, status: 'pending' }
           : step.id === currentStep - 1
-          ? { ...step, status: 'in-progress' }
-          : step
+            ? { ...step, status: 'in-progress' }
+            : step
       ));
     }
   };
@@ -196,7 +196,7 @@ const InitStudent = () => {
 
         // Small delay to ensure database transaction is complete
         await new Promise(resolve => setTimeout(resolve, 100));
-        
+
         await institutionsTableFetchData();
         // Mark step 1 as initialized
       }
@@ -265,13 +265,6 @@ const InitStudent = () => {
   const institutionsTableFetchData = async () => {
     setIsLoading(true);
     try {
-      const deptResponse = await fetch('/api/init/departments', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
       const facultyResponse = await fetch('/api/init/faculties', {
         method: 'GET',
         headers: {
@@ -279,21 +272,29 @@ const InitStudent = () => {
         }
       });
 
-      if (!deptResponse.ok) {
-        throw new Error(`Failed to fetch departments: ${deptResponse.status}`);
-      }
-      
+      const deptResponse = await fetch('/api/init/departments', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
       if (!facultyResponse.ok) {
         throw new Error(`Failed to fetch faculties: ${facultyResponse.status}`);
       }
 
-      const departments = await deptResponse.json();
+      if (!deptResponse.ok) {
+        throw new Error(`Failed to fetch departments: ${deptResponse.status}`);
+      }
+
       const faculties = await facultyResponse.json();
+      const departments = await deptResponse.json();
 
       // Update the institution data state
       setInstitutionData({
-        departments: departments || [],
-        faculties: faculties || []
+        faculties: faculties || [],
+
+        departments: departments || []
       });
       if (departments.length > 0 && faculties.length > 0) {
         setMaxStep(2);
@@ -318,7 +319,7 @@ const InitStudent = () => {
       setSecretariatsData({
         deptSecretariats: data.deptSecretariatsWithDepartment,
         facultySecretariats: data.facultySecretariatsWithFaculty
-      }); 
+      });
       if (data.deptSecretariatsWithDepartment.length > 0 && data.facultySecretariatsWithFaculty.length > 0) {
         setMaxStep(3);
       }
@@ -371,82 +372,82 @@ const InitStudent = () => {
     }
   }
 
-const renderStepContent = () => {
-  const currentStepData = steps[currentStep - 1];
-  return (
-    <div className="bg-white p-6 rounded-lg shadow-md relative">
-      <div className="flex justify-between items-center mb-6">
-        <div className='max-w-sm'>
-          <h2 className="text-xl font-semibold">{currentStepData.title}</h2>
-          <p className="text-gray-600">{currentStepData.description}</p>
-          {/* Show initialization status */}
-          <div className="mt-2">
-          {currentStep === 1 && institutionData.departments.length > 0 && institutionData.faculties.length > 0 && !isLoading ? (
-              <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
-            ) 
-            : currentStep === 2 && secretariatsData.deptSecretariats.length > 0 && secretariatsData.facultySecretariats.length > 0 && !isLoading ? (
-              <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
-            ) 
-            : currentStep === 3 && advisorsData.length > 0 && !isLoading ? (
-              <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
-            ) 
-            : currentStep === 4 && studentsData.length > 0 && !isLoading ? (
-              <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
-            ) 
-            : isLoading ? (
-              <span className="text-gray-500 text-sm font-medium">⏳ Loading...</span>
-            ) : (
-              <span className="text-gray-500 text-sm font-medium">❌ Not initialized</span>
-            )}
-            
+  const renderStepContent = () => {
+    const currentStepData = steps[currentStep - 1];
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-md relative">
+        <div className="flex justify-between items-center mb-6">
+          <div className='max-w-sm'>
+            <h2 className="text-xl font-semibold">{currentStepData.title}</h2>
+            <p className="text-gray-600">{currentStepData.description}</p>
+            {/* Show initialization status */}
+            <div className="mt-2">
+              {currentStep === 1 && institutionData.departments.length > 0 && institutionData.faculties.length > 0 && !isLoading ? (
+                <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
+              )
+                : currentStep === 2 && secretariatsData.deptSecretariats.length > 0 && secretariatsData.facultySecretariats.length > 0 && !isLoading ? (
+                  <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
+                )
+                  : currentStep === 3 && advisorsData.length > 0 && !isLoading ? (
+                    <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
+                  )
+                    : currentStep === 4 && studentsData.length > 0 && !isLoading ? (
+                      <span className="text-green-600 text-sm font-medium">✓ Initialized from UBYS</span>
+                    )
+                      : isLoading ? (
+                        <span className="text-gray-500 text-sm font-medium">⏳ Loading...</span>
+                      ) : (
+                        <span className="text-gray-500 text-sm font-medium">❌ Not initialized</span>
+                      )}
+
+            </div>
           </div>
+          <Stack direction="row" spacing={2}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => fetchData()}
+              disabled={isLoading}
+            >
+              {currentStep === 1 && institutionData.departments.length > 0 && institutionData.faculties.length > 0 ? 'Update Data'
+                : currentStep === 2 && secretariatsData.deptSecretariats.length > 0 && secretariatsData.facultySecretariats.length > 0 ? 'Update Data'
+                  : currentStep === 3 && advisorsData.length > 0 ? 'Update Data'
+                    : currentStep === 4 && studentsData.length > 0 ? 'Update Data' : 'Fetch Data'}
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={handlePreviousStep}
+              disabled={currentStep === 1}
+            >
+              Previous Step
+            </Button>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleNextStep}
+              disabled={currentStep === steps.length}
+            >
+              Next Step
+            </Button>
+          </Stack>
         </div>
-        <Stack direction="row" spacing={2}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => fetchData()}
-            disabled={isLoading}
-          >
-            {currentStep === 1 && institutionData.departments.length > 0 && institutionData.faculties.length > 0 ? 'Update Data' 
-            : currentStep === 2 && secretariatsData.deptSecretariats.length > 0 && secretariatsData.facultySecretariats.length > 0 ? 'Update Data' 
-            : currentStep === 3 && advisorsData.length > 0 ? 'Update Data' 
-            : currentStep === 4 && studentsData.length > 0 ? 'Update Data' : 'Fetch Data'}
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={handlePreviousStep}
-            disabled={currentStep === 1}
-          >
-            Previous Step
-          </Button>
-          <Button
-            variant="contained"
-            color="error"
-            onClick={handleNextStep}
-            disabled={currentStep === steps.length}
-          >
-            Next Step
-          </Button>
-        </Stack>
+
+        {/* Material UI Tables */}
+        {currentStep === 1 && (
+          <StepOneTables data={institutionData} isLoading={isLoading} />
+        )}
+        {currentStep === 2 && (
+          <StepTwoTables data={secretariatsData} isLoading={isLoading} />
+        )}
+        {currentStep === 3 && (
+          <StepThreeTable data={advisorsData} isLoading={isLoading} />
+        )}
+        {currentStep === 4 && (
+          <StepFourTables data={studentsData} isLoading={isLoading} />
+        )}
       </div>
-      
-      {/* Material UI Tables */}
-      {currentStep === 1 && (
-        <StepOneTables data={institutionData} isLoading={isLoading} />
-      )}
-      {currentStep === 2 && (
-        <StepTwoTables data={secretariatsData} isLoading={isLoading} />
-      )}
-      {currentStep === 3 && (
-        <StepThreeTable data={advisorsData} isLoading={isLoading} />
-      )}
-      {currentStep === 4 && (
-        <StepFourTables data={studentsData} isLoading={isLoading} />
-      )}
-    </div>
-  );
-};
+    );
+  };
 
   return (
     <main className="flex-1 p-8">
@@ -463,18 +464,16 @@ const renderStepContent = () => {
           {steps.map((step, index) => (
             <React.Fragment key={step.id}>
               <div
-                className={`flex-1 text-center ${
-                  step.id <= currentStep ? 'text-red-600' : 'text-gray-400'
-                }`}
+                className={`flex-1 text-center ${step.id <= currentStep ? 'text-red-600' : 'text-gray-400'
+                  }`}
               >
                 <div
-                  className={`w-10 h-10 cursor-pointer mx-auto rounded-full flex items-center justify-center mb-2 ${
-                    step.status === 'completed'
-                      ? 'bg-green-500 text-white'
-                      : step.status === 'in-progress'
+                  className={`w-10 h-10 cursor-pointer mx-auto rounded-full flex items-center justify-center mb-2 ${step.status === 'completed'
+                    ? 'bg-green-500 text-white'
+                    : step.status === 'in-progress'
                       ? 'bg-red-600 text-white'
                       : 'bg-gray-200 text-gray-600'
-                  }`}
+                    }`}
                   onClick={() => handleStepClick(step.id)}
                 >
                   {step.id}
