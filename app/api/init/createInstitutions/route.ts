@@ -21,26 +21,22 @@ export async function POST() {
 
     console.log(`Received ${faculties?.length || 0} faculties and ${departments?.length || 0} departments from UBYS`);
 
-    // Use a transaction to ensure data consistency
-    await prisma.$transaction(async (tx) => {
-      // Upsert faculties
-      for (const faculty of faculties || []) {
-        await tx.faculty.upsert({
-          where: { id: faculty.id },
-          update: { name: faculty.name, email: faculty.email },
-          create: { id: faculty.id, name: faculty.name, email: faculty.email }
-        });
-      }
+    for (const faculty of faculties || []) {
+      await prisma.faculty.upsert({
+        where: { id: faculty.id },
+        update: { name: faculty.name, email: faculty.email },
+        create: { id: faculty.id, name: faculty.name, email: faculty.email }
+      });
+    }
 
-      // Upsert departments
-      for (const department of departments || []) {
-        await tx.department.upsert({
-          where: { id: department.id },
-          update: { name: department.name, email: department.email, facultyId: department.facultyId },
-          create: { id: department.id, name: department.name, email: department.email, facultyId: department.facultyId }
-        });
-      }
-    });
+    // Upsert departments
+    for (const department of departments || []) {
+      await prisma.department.upsert({
+        where: { id: department.id },
+        update: { name: department.name, email: department.email, facultyId: department.facultyId },
+        create: { id: department.id, name: department.name, email: department.email, facultyId: department.facultyId }
+      });
+    }
 
     // Verify data was saved
     const facultyCount = await prisma.faculty.count();
