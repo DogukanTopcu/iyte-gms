@@ -9,7 +9,7 @@ import { Box } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import statusName from '@/app/constants/graduation-status'
 import { useRouter } from 'next/navigation'
-import { faculties, departments } from '../../api/ubys/_shared/faculty-and-department-data'
+import { generateBeratPdf } from '@/app/lib/generateBeratCertificate'
 
 interface Faculty {
   id: number;
@@ -219,9 +219,21 @@ const TopStudentsTable = ({
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         {getTableTitle()}
                     </Typography>
-                    <Typography variant="body1" sx={{ mb: 2 }}>
-                        {getTableDescription()}
-                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                        <Typography variant="body1">
+                            {getTableDescription()}
+                        </Typography>
+                        {
+                            showSelectedDepartment && selectedDepartmentName || !isFacultyLevel && !(showSelectedFaculty && selectedFacultyName) && !isUniversityWide ? (
+                                <button
+                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                    onClick={() => generateBeratPdf(studentsWithRanks)}
+                                >
+                                    Generate Berat Certificates
+                                </button>
+                            ) : null
+                        }
+                    </Box>
                     <TableContainer component={Paper}>
                         <Table>
                             <TableHead>
