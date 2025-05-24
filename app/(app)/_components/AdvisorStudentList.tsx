@@ -205,7 +205,7 @@ const StudentListTable = ({ userId, role, newStatus }: { userId: number, role: s
                   })
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} align="center">No students requiring advisor approval found.</TableCell>
+                    <TableCell colSpan={8} align="center">No students requiring approval found.</TableCell>
                   </TableRow>
                 )}
               </TableBody>
