@@ -125,7 +125,7 @@ const StudentListTable = ({ userId, role, newStatus }: { userId: number, role: s
       ) : (
         <>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6">Students Pending Advisor Approval</Typography>
+            <Typography variant="h6">Students Pending For Approval</Typography>
             {students.length > 0 && (
               <Button
                 variant="contained"
