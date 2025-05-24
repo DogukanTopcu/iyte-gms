@@ -155,7 +155,8 @@ export async function GET(req: NextRequest) {
     });
     
     const studentsData = await studentsWithGpaAndTerm(students);
-    const sortedStudents = await sortStudents(studentsData);
+    const filteredStudentsData = studentsData.filter(student => student.term !== 10);
+    const sortedStudents = await sortStudents(filteredStudentsData);
 
     return NextResponse.json(sortedStudents.slice(0, 3), { status: 200 });
 
@@ -186,7 +187,8 @@ export async function GET(req: NextRequest) {
     });
 
     const studentsData = await studentsWithGpaAndTerm(students);
-    const sortedStudents = await sortStudents(studentsData);
+    const filteredStudentsData = studentsData.filter(student => student.term !== 10);
+    const sortedStudents = await sortStudents(filteredStudentsData);
 
     return NextResponse.json(sortedStudents.slice(0, 3), { status: 200 });
   }else if (role === 'student affairs') {
@@ -208,7 +210,8 @@ export async function GET(req: NextRequest) {
     });
 
     const studentsData = await studentsWithGpaAndTerm(students);
-    const sortedStudents = await sortStudents(studentsData);
+    const filteredStudentsData = studentsData.filter(student => student.term !== 10);
+    const sortedStudents = await sortStudents(filteredStudentsData);
 
     return NextResponse.json(sortedStudents.slice(0, 3), { status: 200 });
   }
