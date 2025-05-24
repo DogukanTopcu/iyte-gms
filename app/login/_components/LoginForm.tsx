@@ -14,7 +14,6 @@ const inputStyles = `
 export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   
   // Use the auth context
   const { login, isLoading } = useAuth();
@@ -64,18 +63,7 @@ export default function LoginForm() {
         </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <input
-              id="rememberMe"
-              name="rememberMe"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              disabled={isLoading}
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded disabled:opacity-50"
-            />
-            <label htmlFor="rememberMe" className="ml-2 block text-sm text-gray-900">Remember Me</label>
-          </div>
+
         </div>
 
         <div>
