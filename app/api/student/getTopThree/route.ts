@@ -148,23 +148,32 @@ export async function GET(req: NextRequest) {
   };
 
   const getTopThreeWithTies = (sortedStudents: StudentWithGpaAndTerm[]): StudentWithGpaAndTerm[] => {
-    if (sortedStudents.length === 0) {
+    if (!sortedStudents || sortedStudents.length === 0) {
       return [];
     }
-    if (sortedStudents.length <= 3) {
-      return sortedStudents;
-    }
 
-    const thirdRankDefiningStudent = sortedStudents[2];
-    const topStudentsResult = [];
-    for (const student of sortedStudents) {
-      // Include student if they are better than or equal to the 3rd rank defining student
-      if (compareStudentsForFinalRanking(student, thirdRankDefiningStudent) <= 0) {
-        topStudentsResult.push(student);
-      } else {
-        // Students are sorted, so once we find one worse than the 3rd, the rest will also be worse
-        break;
+    const topStudentsResult: StudentWithGpaAndTerm[] = [];
+    let distinctRanksCount = 0;
+    // Stores a student that defines the current rank group being processed.
+    // Used to detect when a new, distinct rank group begins.
+    let representativeOfRankGroup: StudentWithGpaAndTerm | null = null;
+
+    for (const currentStudent of sortedStudents) {
+      if (representativeOfRankGroup === null || compareStudentsForFinalRanking(currentStudent, representativeOfRankGroup) !== 0) {
+        // This currentStudent starts a new distinct rank group.
+        distinctRanksCount++;
+        if (distinctRanksCount > 3) {
+          // We have already collected students from 3 distinct rank groups.
+          // Any further students would belong to a 4th (or more) distinct rank, so we stop.
+          break;
+        }
+        // Update the representative for this new rank group.
+        representativeOfRankGroup = currentStudent;
       }
+      // Add the student to the result.
+      // This student is either part of the first 3 distinct rank groups
+      // or is tied with students in the 3rd distinct rank group (because the loop would have broken if it started a 4th distinct rank).
+      topStudentsResult.push(currentStudent);
     }
     return topStudentsResult;
   };
